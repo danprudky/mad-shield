@@ -1,10 +1,5 @@
-from agents.coordinator import Coordinator
-from config_loader import ConfigLoader
+from mad import MAD
 
-model = ConfigLoader().get_model()
+mad = MAD()
 
-coordinator = Coordinator(model, 'You will be debate coordinator, reply as short as possible')
-
-response = coordinator.ask()
-
-print(response)
+mad.debate('toto je problém')

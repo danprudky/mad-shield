@@ -5,3 +5,10 @@ model:
   n: 1
   max_tokens: 1000
   model_type: deepseek-r1-distill-llama-70b
+
+agents:
+  firewall: ./test-configs/firewall
+  server: ./test-configs/apache
+  dns: ./test-configs/dns.example.com
+  netplan: ./test-configs/netplan
+  ssh: ./test-configs/sshd_config

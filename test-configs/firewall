@@ -1,0 +1,8 @@
+# Povolit SSH
+ufw allow 22/tcp
+# Povolit HTTP a HTTPS
+ufw allow 80/tcp
+ufw allow 443/tcp
+# Blokovat všechny ostatní příchozí spojení
+ufw default deny incoming
+ufw enable

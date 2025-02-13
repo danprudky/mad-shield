@@ -44,3 +44,6 @@ class ConfigLoader:
             api_key=self.api_key,
             model_config_dict=self.get_model_config().dict(),
         )
+
+    def get_agents(self):
+        return self.config["agents"]
