@@ -4,7 +4,7 @@ from camel.types import ModelPlatformType
 from camel.configs.base_config import BaseConfig
 from typing import Optional
 
-from configers.loader import ConfigLoader
+from .loader import ConfigLoader
 
 
 class ModelLoader(ConfigLoader):

@@ -5,7 +5,7 @@ from typing import List
 
 
 class MultiAgentDebate:
-    def __init__(self, max_rounds = 2) -> None:
+    def __init__(self, max_rounds=2) -> None:
         self.model = ModelLoader().load()
         self.max_rounds = max_rounds
         self.clients: List[ClientAgent] = []
@@ -18,7 +18,7 @@ class MultiAgentDebate:
 
         self.judge = JudgeAgent(self)
 
-    def debate(self, alert) -> None:
+    def debate(self, alert: str) -> None:
         # TODO Implement
         print("Debating...")
         self.judge.init_debate(alert)
@@ -32,16 +32,16 @@ class MultiAgentDebate:
 
         # Summarizer extern commands
         # TODO Implement
-        executable_commands = [{
-            'agent' : 'ssh_client',
-            'commands' : ['ls', 'ls -h']
-        }, {
-            'agent' : 'firewall_client',
-            'commands' : ['dir']
-        }]
+        executable_commands = [
+            {"agent": "ssh_client", "commands": ["ls", "ls -h"]},
+            {"agent": "firewall_client", "commands": ["dir"]},
+        ]
 
         for item in executable_commands:
-            client_with_role = next((client for client in self.clients if client.role == item["agent"]), None)
+            client_with_role = next(
+                (client for client in self.clients if client.role == item["agent"]),
+                None,
+            )
             if client_with_role is not None:
                 for command in item["commands"]:
                     client_with_role.execute(command)

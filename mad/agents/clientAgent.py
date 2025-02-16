@@ -5,8 +5,8 @@ from .lawyerAgent import LawyerAgent
 class ClientAgent(ComponentAgent):
     def __init__(self, mad, component) -> None:
         super().__init__(mad, component)
-        self.init_msg: str = "Budeš " + component.component + " agent"
-        self.role: str = component.component + "_client"
+        self.init_msg: str = "Budeš " + component.name + " agent"
+        self.role: str = component.name + "_client"
         self.lawyer: LawyerAgent = self.hire_lawyer()
 
     def hire_lawyer(self) -> LawyerAgent:

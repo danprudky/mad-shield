@@ -1,4 +1,4 @@
-from configers.loader import ConfigLoader
+from .loader import ConfigLoader
 
 
 class AgentLoader(ConfigLoader):

@@ -12,14 +12,14 @@ class JudgeAgent(DebateAgent):
         # TODO Implement
         print("Initializing debate about " + alert)
         for lawyer in self.mad.lawyers:
-            lawyer.react(1)
+            lawyer.propose_solution(alert)
 
     def summarize_debate(self, debate_round: int) -> tuple[str, bool]:
         # Summarize debate and decide if it is solved
         # TODO Implement
         print("Summarizing debate...")
-
-        return 'Debate summary', False
+        summary = "Debate summary"
+        return summary, self.is_debate_over(summary)
 
     def get_opinion(self, debate_round: int):
         # Sending summary to agents and ask their opinion
@@ -27,3 +27,10 @@ class JudgeAgent(DebateAgent):
         print("Getting agents opinion...")
         for lawyer in self.mad.lawyers:
             lawyer.react(debate_round)
+
+    def is_debate_over(self, summary: str):
+        if "over" in summary.lower():
+            print("Debate over!")
+            return True
+
+        # return "over" in summary

@@ -1,12 +1,12 @@
 agents:
   firewall:
-    - ./test-configs/firewall
+    - ./test/config/firewall
   server:
-    - ./test-configs/apache
+    - ./test/config/apache
   dns:
-    - ./test-configs/dns.example.com
+    - ./test/config/dns.example.com
   netplan:
-    - ./test-configs/netplan
+    - ./test/config/netplan
   ssh:
-    - ./test-configs/sshd_config
-    - ./test-configs/sshd_config2
+    - ./test/config/sshd_config
+    - ./test/config/sshd_config2
