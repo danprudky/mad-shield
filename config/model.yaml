@@ -1,0 +1,7 @@
+model:
+  platform_name: groq
+  temperature: 0.7
+  top_p: 0.9
+  n: 1
+  max_tokens: 1000
+  model_type: deepseek-r1-distill-llama-70b

@@ -1,5 +1,7 @@
-from mad import MAD
+from mad import *
 
-mad = MAD()
+mad = MultiAgentDebate(3)
 
-mad.debate('toto je problém')
+print()
+
+mad.debate("DDoS attack")

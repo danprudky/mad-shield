@@ -1,0 +1,15 @@
+# Povolit pouze specifického uživatele
+AllowUsers adminuser
+
+# Zakázat root přihlášení
+PermitRootLogin yes
+
+# Povolit pouze SSH protokol 2 (bezpečnější)
+Protocol 2
+
+# Zakázat heslové přihlášení, povolit jen klíče
+PasswordAuthentication yes
+PubkeyAuthentication yes
+
+# Specifikovat port (změna z defaultního 22)
+Port 2222
