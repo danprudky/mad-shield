@@ -8,7 +8,7 @@ prompts:
   attack: |
     The threat described by this summary has appeared on the network:
     {attack_alert}
-    Take a look at your component settings, evaluate the vulnerability of your component for yourself and design a solution in the simplest possible format:
+    Take a look at your component settings, evaluate the vulnerability of your component for yourself and design a solution with executable cli command in the simplest possible format:
     [(<executable cli command>, <justification>), ...]
     I don't need to add anything more to the commands, a brief justification is enough.
 

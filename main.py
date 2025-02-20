@@ -1,7 +1,5 @@
-from mad import *
+from mad_shield import *
 
-mad = MultiAgentDebate(3)
+mad_shield = MadShield("mad_shield/config/agents.yaml", 1)
 
-print()
-
-mad.debate("DDoS attack")
+mad_shield.go("test/alert/sql_injection")

@@ -8,9 +8,12 @@ from .loader import ConfigLoader
 
 
 class ModelLoader(ConfigLoader):
-    def __init__(self, config_path="config/model.yaml") -> None:
+    def __init__(
+        self, model_type: str, config_path: str = "mad_shield/config/models.yaml"
+    ) -> None:
         super().__init__(config_path)
-        self.model_config = self.config["model"]
+        self.model_config = self.config["models"][model_type]
+        print(self.model_config)
 
     def __get_model_config(self) -> Optional[BaseConfig]:
         platform_name = self.model_config["platform_name"].lower()
