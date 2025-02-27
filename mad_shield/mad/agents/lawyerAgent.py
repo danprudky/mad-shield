@@ -28,19 +28,11 @@ class LawyerAgent(DebateAgent):
 
     def propose_solution(self, alert: str) -> str:
         msg = self._get_attack_msg(alert)
-        response = self.chat.step(msg)
+        response = self.step(msg)
         return str(response.msgs[0].content)
-        # TODO Debug print(self.role + " proposing solution with:")
-        # TODO Debug print(msg)
 
-    def react(self, debate_round: int) -> None:
+    def react(self, proposal_summary) -> str:
         # Load message and create proposals or agree
-        # TODO Implement
-        msg = self._get_react_msg("This is summary")
-        # TODO Debug print(
-        # TODO Debug     self.role
-        # TODO Debug     + " reacting on solution from round "
-        # TODO Debug     + str(debate_round)
-        # TODO Debug     + " with:"
-        # TODO Debug )
-        # TODO Debug print(msg)
+        msg = self._get_react_msg(proposal_summary)
+        response = self.step(msg)
+        return str(response.msgs[0].content)

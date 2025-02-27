@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from camel.agents import ChatAgent
 
 from ...configers import PromptLoader, ModelLoader
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from mad_shield.mad.mad import MultiAgentDebate
 
 
-class DebateAgent(ABC):
+class DebateAgent(ChatAgent):
     def __init__(
         self,
         mad: "MultiAgentDebate",
@@ -25,7 +25,7 @@ class DebateAgent(ABC):
             "mad_shield/config/prompts/" + prompt_file + ".yaml"
         ).load()
 
-        self.chat = ChatAgent(system_message=self.get_init_msg(), model=self.model)
+        super().__init__(system_message=self.get_init_msg(), model=self.model)
 
     @abstractmethod
     def get_init_msg(self) -> str:
