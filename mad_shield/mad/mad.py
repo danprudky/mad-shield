@@ -1,14 +1,15 @@
-import os
-from camel.tasks import Task
+import time
+
+from camel.societies.workforce import Workforce
 
 from .agents import *
-from ..command import Command
+from mad_shield.mad.tasks.debate import debate_task
 from typing import List
 from typing import TYPE_CHECKING
-import logging
 
 if TYPE_CHECKING:
     from mad_shield.agents.componentAgent import ComponentAgent
+
 
 class MultiAgentDebate:
 
@@ -23,50 +24,67 @@ class MultiAgentDebate:
 
         self.judge = JudgeAgent(self)
 
-
-    def debate(self, alert: str) -> List[Command]:
-        # TODO Implement
-        print("Debating...")
-        debate_round = 1
-
-        proposals = self.judge.init_debate(alert)
-        proposal_summary, is_over = self.judge.summarize_debate(proposals)
-        logging.debug(f"\n\n\nProposals in {debate_round}:\n{proposals}")
-        logging.debug(f"Proposal summary:\n{proposal_summary}")
-
-        print(f"Debate round {debate_round} is done")
-        while not is_over and debate_round < self.max_rounds:
-            debate_round += 1
-            proposals = self.judge.get_opinion(proposal_summary, debate_round)
-            logging.debug(f"\n\n\nProposals in {debate_round}:\n{proposals}")
-            logging.debug(f"Proposal summary:\n{proposal_summary}")
-
-            proposal_summary, is_over = self.judge.summarize_debate(proposals)
-            logging.debug(f"Debate round {debate_round} is done")
-
-        if not is_over:
-            logging.debug("Debate ends by max rounds reached")
-
-        logging.debug(proposal_summary)
-
-        # Summarizer extern commands
-        # TODO Implement
-        executable_commands = [
-            ["ssh", "ls -h"],
-            ["ssh", "ls"],
-            ["firewall", "dir"],
-        ]
-
-        result = []
-        for component, command in executable_commands:
-            c = next((c for c in self.components if c.name == component), None)
-            if c is None:
-                raise ValueError(f"Component '{component}' not found")
-            result.append(Command(c, command))
-        return result
-
     def get_components_in_str(self) -> str:
         return ", ".join(component.name for component in self.components)
 
-    def task(self):
-        task = Task()
+    def debate_workforce(self, alert: str) -> None:
+        start = time.time()
+
+        workforce = Workforce("Multiagent debate shield")
+
+        workforce.add_single_agent_worker(
+            "Judge agent is coordinator of debate",
+            worker=self.judge,
+        )
+
+        for lawyer in self.lawyers:
+            workforce.add_single_agent_worker(
+                lawyer.role + " is component agent defending his component",
+                worker=lawyer,
+            )
+
+        task = workforce.process_task(debate_task(alert, self.max_rounds))
+
+        print(f"Debating tasks: {time.time() - start} seconds")
+        print(task.result)
+
+
+#    def debate(self, alert: str) -> List[Command]:
+#        print("Debating...")
+#        debate_round = 1
+#
+#        proposals = self.judge.init_debate(alert)
+#        proposal_summary, is_over = self.judge.summarize_debate(proposals)
+#        logging.debug(f"\n\n\nProposals in {debate_round}:\n{proposals}")
+#        logging.debug(f"Proposal summary:\n{proposal_summary}")
+#
+#        print(f"Debate round {debate_round} is done")
+#        while not is_over and debate_round < self.max_rounds:
+#            debate_round += 1
+#            proposals = self.judge.get_opinion(proposal_summary, debate_round)
+#            logging.debug(f"\n\n\nProposals in {debate_round}:\n{proposals}")
+#            logging.debug(f"Proposal summary:\n{proposal_summary}")
+#
+#            proposal_summary, is_over = self.judge.summarize_debate(proposals)
+#            logging.debug(f"Debate round {debate_round} is done")
+#
+#        if not is_over:
+#            logging.debug("Debate ends by max rounds reached")
+#
+#        logging.debug(proposal_summary)
+#
+#        # Summarizer extern commands
+#        # TODO Implement
+#        executable_commands = [
+#            ["ssh", "ls -h"],
+#            ["ssh", "ls"],
+#            ["firewall", "dir"],
+#        ]
+#
+#        result = []
+#        for component, command in executable_commands:
+#            c = next((c for c in self.components if c.name == component), None)
+#            if c is None:
+#                raise ValueError(f"Component '{component}' not found")
+#            result.append(Command(c, command))
+#        return result

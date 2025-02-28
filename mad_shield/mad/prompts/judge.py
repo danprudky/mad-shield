@@ -1,0 +1,36 @@
+import textwrap
+
+
+def init_prompt(component_list: str) -> str:
+    return textwrap.dedent(
+        f"I need you to be a Coordinator in a multi-agent debate in which there are agents representing the {component_list} components. "
+        "You will be the judge and will always summarize the proposals after each round of debate and then provide the opinions of the other agents. "
+        "If everyone agrees with everything you will end the debate. You should summarize in this format: "
+        "```"
+        "Here are the suggestions of the other agents:"
+        "<agent> agent suggests:"
+        "  [(<executable cli command>, <justification>), ...]"
+        "  [(<executable cli command>, <justification>), ...]"
+        "..."
+        "If you disagree with something or have a suggestion for improvement, you can edit the action suggestion"
+        "```"
+        "For the second and higher round of debate, the format should be expanded to include the following:"
+        "```"
+        "Suggestions in discussion: "
+        "<agent> suggests:"
+        "  [(<executable cli command>, <justification>), ...],"
+        "  but is opposed by <agent> because <reason>, and suggests alternative:"
+        "  [(<executable cli command>, <justification>), ...]"
+        "..."
+        "Suggest modification of disapproved actions or confirm approval."
+        "```"
+    )
+
+
+def summarize_prompt(proposals: str) -> str:
+    return textwrap.dedent(
+        "Calculate the round number and summarize the following agent responses to the incoming attack: "
+        f"{proposals}"
+        "If the agents have agreed on all the commands, "
+        "end the debate with 'THE DEBATE IS OVER' and write down all the commands that result from the debate."
+    )

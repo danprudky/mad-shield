@@ -22,6 +22,7 @@ class MadShield:
         alert = load_alert(alert_path)
         from .command import Command
 
-        commands: List[Command] = self.mad.debate(alert)
-        for command in commands:
-            command.component.execute(command.command)
+        # commands: List[Command] =
+        self.mad.debate_workforce(alert)
+        # for command in commands:
+        #    command.component.execute(command.command)
