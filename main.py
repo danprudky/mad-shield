@@ -1,0 +1,20 @@
+from mad_shield import *
+import logging
+
+def main():
+    logging.basicConfig(
+        filename='mad.log',
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        force=True
+    )
+
+    logging.debug('Starting')
+
+    mad_shield = MadShield("mad_shield/config/agents.yaml", 3)
+
+    mad_shield.go("test/alert/sql_injection")
+
+if __name__ == '__main__':
+    main()
