@@ -1,11 +1,11 @@
 import time
 
-from camel.societies.workforce import Workforce
-
 from .agents import *
 from mad_shield.mad.tasks.debate import debate_task
 from typing import List
 from typing import TYPE_CHECKING
+
+from .workforce import Workforce
 
 if TYPE_CHECKING:
     from mad_shield.agents.componentAgent import ComponentAgent
@@ -18,34 +18,36 @@ class MultiAgentDebate:
         self.components = components
 
         self.lawyers: List[LawyerAgent] = []
+        self.judge = None
+        self.workforce = None
 
+    def load_agents(self):
         for component in self.components:
             self.lawyers.append(component.hire_lawyer(self))
 
         self.judge = JudgeAgent(self)
 
-    def get_components_in_str(self) -> str:
-        return ", ".join(component.name for component in self.components)
-
-    def debate_workforce(self, alert: str) -> None:
-        start = time.time()
-
-        workforce = Workforce("Multiagent debate shield")
-
-        workforce.add_single_agent_worker(
-            "Judge agent is coordinator of debate",
-            worker=self.judge,
+    def load_workforce(self):
+        self.workforce = Workforce(
+            coordinator=self.judge,
+            description="Multiagent debate shield"
         )
 
         for lawyer in self.lawyers:
-            workforce.add_single_agent_worker(
+            self.workforce.add_single_agent_worker(
                 lawyer.role + " is component agent defending his component",
                 worker=lawyer,
             )
 
-        task = workforce.process_task(debate_task(alert, self.max_rounds))
+    def get_components_in_str(self) -> str:
+        return ", ".join(component.name for component in self.components)
 
-        print(f"Debating tasks: {time.time() - start} seconds")
+    def debate(self, alert: str) -> None:
+        start = time.time()
+
+        task = self.workforce.process_task(debate_task(alert))
+
+        print(f"\nDebating tasks: {time.time() - start} seconds")
         print(task.result)
 
 
