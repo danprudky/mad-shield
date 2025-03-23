@@ -1,7 +1,7 @@
-import textwrap
+from camel.prompts import TextPrompt
 
 
-def init_prompt(component_list: str, max_round: int) -> str:
+def init_prompt(component_list: str, max_rounds: int) -> str:
     """
     Generates the initial prompt for coordinating a multi-agent debate.
 
@@ -12,7 +12,7 @@ def init_prompt(component_list: str, max_round: int) -> str:
 
     Args:
         component_list (str): A comma-separated string of component names representing the agents.
-        max_round (int): The maximum number of debate rounds allowed before termination.
+        max_rounds (int): The maximum number of rounds that the debate will run for.
 
     Returns:
         str: A formatted prompt string outlining the debate rules, structure, and expected summarization formats.
@@ -23,31 +23,18 @@ def init_prompt(component_list: str, max_round: int) -> str:
     - Rules for summarizing agent responses.
     - Specific formats for final approved proposals.
     """
-    return textwrap.dedent(
-        "YOUR IDENTITY:"
-        f"I need you to be a Coordinator in a multi-agent debate in which there are agents representing the {component_list} components and summarizer agent. "
-        "You will be the judge and will ask agents about their proposals, after second round check if debate is not over "
-        "and if not, then provide the opinions of the other agents to all of them. "
-        "If everyone agrees with everything you will end the debate with 'THE DEBATE IS OVER'."
-        
-        "DEBATE ALGORITHM:"
-        "1. Each lawyer agent asynchronously propose secure suggestions to incoming attack alert."
-        "2. Summarizer agent summarize the proposals into SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS."
-        "3. Each lawyer agent asynchronously react on other lawyer agents proposals."
-        "4. Summarizer agent summarize the reactions of lawyers into SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS."
-        "5. If they all APPROVED all proposals then end debate with 'THE DEBATE IS OVER' and return debate in FINAL PROPOSALS FORMAT. "
-        f"   Otherwise, repeat step 4 and 5, until they will all agree or debate round will reaches {max_round}."
-        
-        "SUMMARIZATION RULES:"
-        "1. Only if every agent said they agree on other agent proposal, summarizer agent can mark it as APPROVED. Otherwise, you will invoke discussion of this proposal."
-        "2. There will always be at least 2 rounds of debate (making proposals and agree on other agents proposals)."
-        
-        "FINAL PROPOSALS FORMAT:"
-        "DEBATE IS OVER!"
-        "Here are all approved suggestions of all agents:"
-        "  ["
-        "    (<agent>, <executable cli command>),"
-        "    (<agent>, <executable cli command>),"
-        "  ]"
-        "..."
+    return TextPrompt(
+        "YOUR IDENTITY:\n"
+        f"I need you to be a Coordinator in a multi-agent debate in which there are lawyer agents representing the {component_list} components. "
+        "The debate should start immediately with the lawyer agents proposing their secure suggestions for the incoming attack alert. "
+        "You are responsible for collecting these proposals, coordinating the subsequent rounds, and eventually ending the debate. "
+        "I will provide you with the FINAL PROPOSALS FORMAT (which you must use to end the workforce task). \n\n"
+
+        "FINAL PROPOSALS FORMAT:\n"
+        "Here are all approved suggestions of all agents:\n"
+        "  [\n"
+        "    (<agent>, <executable cli command>),\n"
+        "    (<agent>, <executable cli command>),\n"
+        "  ]\n"
+        "...",
     )

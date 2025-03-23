@@ -21,6 +21,7 @@ class MadShield:
     def go(self, alert_path: str) -> None:
         alert = load_alert(alert_path)
         self.mad.debate(alert)
+        #self.mad.task_test(alert)
 
         #from .command import Command
         # commands: List[Command] =

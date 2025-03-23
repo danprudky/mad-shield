@@ -1,4 +1,4 @@
-import textwrap
+from camel.prompts import TextPrompt
 
 
 def init_prompt(component_name: str, component_description: str) -> str:
@@ -24,35 +24,34 @@ def init_prompt(component_name: str, component_description: str) -> str:
     - A structured format for providing proposals and critiques.
     - The goal of the debate: finding compromises to protect the system while minimizing conflicts.
     """
-    return textwrap.dedent(
-        "YOUR IDENTITY:"
-        f"I need you to be an agent in a multi-agent debate and represent a {component_name} component with this setup: "
-        f"{component_description}"
-        "Your role in the debate will be to advocate for solutions that will protect your component in the event of a cyber attack."
-        "Your job will have two phases. First will be giving proposals, in form of executable cli commands, that will somehow protect your component. "
-        "This will happen especially in first round and then, in second phase you will criticize the proposals of others, if you will see some better options, "
-        "their proposals will be against you and so on. The goal of the debate will be finding compromises to minimize conflict between proposals and "
-        "in first place protect system in the event of cyber attack."
+    return TextPrompt(
+        "YOUR IDENTITY:\n"
+        f"I need you to be an agent in a multi-agent debate representing the {component_name} component with the following setup: {component_description}\n\n"
+        "Your role is to propose defense strategies for your component in the event of a cyber attack. "
+        "The debate will have two distinct phases:\n"
+        "1. In the first round, provide your proposals as executable CLI commands with brief justifications using propose_tool.\n"
+        "2. Starting from the second round, respond to other agents’ proposals using the react_prompt tool and format it into CRITICIZE FORMAT. "
+        "Every response from you must strictly follow the CRITICIZE FORMAT from round 2 onward.\n\n"
         
-        "PROPOSALS FORMAT:"
-        "I'm suggesting these proposals:"
-        "  ["
-        "    (<executable cli command>, <justification>),"
-        "    ..."
-        "  ]"
+        "PROPOSALS FORMAT:\n"
+        "I'm suggesting these proposals:\n"
+        "  [\n"
+        "    (<executable cli command>, <justification>),\n"
+        "    ...\n"
+        "  ]\n\n"
         
-        "CRITICIZE FORMAT:"
-        "I'm approving these proposals:"
-        "<agent> agent suggests:"
-        "  ["
-        "    (<executable cli command>, <justification>) - APPROVED,"
-        "    (<executable cli command>, <justification>) - APPROVED,"
-        "  ]"
-        "I disagree on these proposals:"
-        "<agent> suggests:"
-        "  (<executable cli command>, <justification>),"
-        "  but <reason>, and suggesting alternative:"
-        "  [(<executable cli command>, <justification>), ...]"
+        "CRITICIZE FORMAT:\n"
+        "I'm approving these proposals:\n"
+        "<agent> agent suggests:\n"
+        "  [\n"
+        "    (<executable cli command>, <justification>) - APPROVED,\n"
+        "    ...\n"
+        "  ]\n"
+        "I disagree on these proposals:\n"
+        "<agent> suggests:\n"
+        "  (<executable cli command>, <justification>),\n"
+        "  because <reason>, and suggesting alternative:\n"
+        "  [ (<executable cli command>, <justification>), ... ]\n"
         "..."
     )
 
@@ -78,13 +77,12 @@ def propose_prompt(attack_alert: str) -> str:
     - Instructions to generate a solution using executable CLI commands.
     - A requirement for brief justifications alongside the proposed commands.
     """
-    return textwrap.dedent(
-        "The threat described by this summary has appeared on the network:"
-        f"{attack_alert}"
-        "Take a look at your component settings, evaluate the vulnerability of your component for yourself and "
-        "design a solution with executable cli command in the simplest possible format:"
-        "[(<executable cli command>, <justification>), ...]"
-        "I don't need to add anything more to the commands, a brief justification is enough."
+    return TextPrompt(
+        "The threat described by this summary has appeared on the network:\n"
+        f"{attack_alert}\n"
+        "Review your component settings, evaluate the vulnerability, and design a solution with executable CLI commands in the simplest possible format:\n"
+        "  [ (<executable cli command>, <justification>), ... ]\n"
+        "Provide a brief justification for each command."
     )
 
 
@@ -108,8 +106,9 @@ def react_prompt(proposals_summary: str) -> str:
     - A request for the agent to review and provide feedback.
     - Instructions to either approve the commands or suggest modifications.
     """
-    return textwrap.dedent(
-        "Here is a summary of agents' suggestions for incoming alert:"
-        f"{proposals_summary}"
-        "If you disagree with something or have suggestions for improvement, edit the individual commands, otherwise write that you agree with the command."
+    return TextPrompt(
+        "Here is a summary of lawyer agents' suggestions for the incoming alert:\n"
+        f"{proposals_summary}\n"
+        "Starting from the second round, please review the proposals and respond in CRITICIZE FORMAT. "
+        "If you agree with a command, simply state your approval. If not, provide your critique and propose an alternative."
     )

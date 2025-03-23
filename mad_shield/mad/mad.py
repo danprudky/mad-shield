@@ -1,11 +1,14 @@
 import time
 
-from .agents import *
-from mad_shield.mad.tasks.debate import debate_task
 from typing import List
 from typing import TYPE_CHECKING
 
+from camel.tasks.task import Task
+
+from .agents import *
+from mad_shield.mad.tasks.debate import debate_task
 from .agents.summarizer import SummarizerAgent
+from mad_shield.mad.tasks.debate import TASK1, TASK2, TASK3, TASK4, TASK5, TASK6
 from .workforce import Workforce
 
 if TYPE_CHECKING:
@@ -13,7 +16,6 @@ if TYPE_CHECKING:
 
 
 class MultiAgentDebate:
-
     def __init__(self, components: List["ComponentAgent"], max_rounds: int = 5) -> None:
         self.max_rounds = max_rounds
         self.components = components
@@ -43,9 +45,11 @@ class MultiAgentDebate:
             )
 
         self.workforce.add_single_agent_worker(
-            description="Summarization agent to condense and extract proposals from each debate round",
+            description="summarizer agent to condense and extract proposals from each debate round",
             worker=self.summarizer,
         )
+
+        self.workforce.load_children_data()
 
     def get_components_in_str(self) -> str:
         return ", ".join(component.name for component in self.components)
@@ -53,10 +57,22 @@ class MultiAgentDebate:
     def debate(self, alert: str) -> None:
         start = time.time()
 
-        task = self.workforce.process_task(debate_task(alert))
+
+        task = self.workforce.process_tasks(self.load_tasks())
 
         print(f"\nDebating tasks: {time.time() - start} seconds")
         print(task.result)
+
+    @staticmethod
+    def load_tasks() -> List[Task]:
+        return [TASK1, TASK2, TASK3, TASK4, TASK5, TASK6]
+
+    def task_test(self, alert: str) -> None:
+        task = debate_task(alert, 3)
+
+        new_tasks = task.decompose(agent=self.judge)
+        for t in new_tasks:
+            print(t.to_string())
 
 #        # Summarizer extern commands
 #        # TODO Implement
