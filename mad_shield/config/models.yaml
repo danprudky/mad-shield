@@ -14,7 +14,7 @@ models:
     max_tokens: 6000
     model_type: llama-3.3-70b-specdec
   gpt_4o_mini:
-    temperature: 0
+    temperature: 0.0
     top_p: 0.9
     n: 1
-    max_tokens: 5000
+    max_tokens: 10000

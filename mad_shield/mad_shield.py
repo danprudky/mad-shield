@@ -1,5 +1,3 @@
-from typing import List
-
 from .configers import AgentLoader
 from .agents.componentAgent import ComponentAgent
 from .mad import *
@@ -22,9 +20,9 @@ class MadShield:
 
     def go(self, alert_path: str) -> None:
         alert = load_alert(alert_path)
-        from .command import Command
-
-        # commands: List[Command] =
         self.mad.debate(alert)
+
+        #from .command import Command
+        # commands: List[Command] =
         # for command in commands:
         #    command.component.execute(command.command)
