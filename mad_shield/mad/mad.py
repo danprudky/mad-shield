@@ -57,15 +57,14 @@ class MultiAgentDebate:
     def debate(self, alert: str) -> None:
         start = time.time()
 
-
-        task = self.workforce.process_tasks(self.load_tasks())
+        task = self.workforce.process_tasks(self.load_tasks(alert))
 
         print(f"\nDebating tasks: {time.time() - start} seconds")
         print(task.result)
 
     @staticmethod
-    def load_tasks() -> List[Task]:
-        return [TASK1, TASK2, TASK3, TASK4, TASK5, TASK6]
+    def load_tasks(alert: str) -> List[Task]:
+        return [TASK1.format(alert), TASK2, TASK3, TASK4, TASK5, TASK6]
 
     def task_test(self, alert: str) -> None:
         task = debate_task(alert, 3)

@@ -18,6 +18,7 @@ class Workforce(CamelWorkforce):
         self._lawyers = None
         self._summarizer = None
         self._task_in_progress = None
+        self._channel: TaskChannel
 
         if coordinator is not None:
             self.coordinator_agent = coordinator
@@ -29,7 +30,7 @@ class Workforce(CamelWorkforce):
     def process_tasks(self, tasks: List[Task]) -> Task:
         self.reset()
 
-        self._pending_tasks.extendleft(reversed(tasks)) #TODO: Možná bude potřeba ladit task id, třeba to nechodí kvůli tomu
+        self._pending_tasks.extendleft(reversed(tasks))
         self.set_channel(TaskChannel())
 
         asyncio.run(self.start())
@@ -43,8 +44,7 @@ class Workforce(CamelWorkforce):
         return [child for child in self._children if "summarizer" in child.worker.role_name][0]
 
     async def _post_task(self, task: Task, assignee: BaseNode) -> None:
-        logger.info(f"Posting task to \"{assignee.worker.role_name}\"") #TODO: DAN SMAZAT
-        task.id = task.id + "." + str(int(assignee.node_id) % 100000)   #TODO: Toto nejde, každý musí mít svůj task
+        print(f"Posting task to \"{assignee.node_id}\"") #TODO: DAN SMAZAT
         await self._channel.post_task(task, self.node_id, assignee.node_id)
 
     async def _post_dependency(self, dependency: Task) -> None:
@@ -54,6 +54,7 @@ class Workforce(CamelWorkforce):
         r"""Get the task that's published by this node and just get returned
         from the assignee.
         """
+        print("Requesting task from assignee " + assignee.node_id)
         return await self._channel.get_returned_task_by_assignee(assignee.node_id)  #TODO: Dotypovvat
 
     async def _post_ready_tasks(self) -> None:
@@ -62,6 +63,7 @@ class Workforce(CamelWorkforce):
 
         ready_task = self._pending_tasks[0]
         self._task_in_progress = ready_task
+
         logger.info(f"Task \"{ready_task.content}\" getting posted.")
 
         # If the task has failed previously, just compose and send the task
@@ -81,7 +83,9 @@ class Workforce(CamelWorkforce):
             # Find a node to assign the task
             if ready_task.type == "Lawyer":
                 for assignee in self._lawyers:
-                    await self._post_task(ready_task, assignee)
+                    lawyer_task = ready_task.model_copy()
+                    lawyer_task.id = ready_task.id + "." + assignee.node_id
+                    await self._post_task(lawyer_task, assignee)
             elif ready_task.type == "Summarizer":
                 await self._post_task(ready_task, self._summarizer)
             else:
@@ -96,9 +100,14 @@ class Workforce(CamelWorkforce):
         logger.info(f"Workforce {self.node_id} await done.")
 
         while self._task_in_progress is not None or self._pending_tasks:
+
+            logger.info(f"Running again because self._pending_tasks is {self._pending_tasks} and self._task_in_progress is {self._task_in_progress is None}.")
+            logger.info(f"This is _task_in_progress: {self._task_in_progress}.")
+
             if self._task_in_progress.type == "Lawyer":
                 returned_tasks = []
                 for assignee in self._lawyers:
+                    print("Getting returned_task from assignee " + assignee.worker.role_name)
                     returned_task = await self._get_returned_task_from_assignee(assignee)
                     returned_tasks.append(returned_task)
             elif self._task_in_progress.type == "Summarizer":

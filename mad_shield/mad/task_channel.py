@@ -1,5 +1,9 @@
+import logging
+
 from camel.societies.workforce.task_channel import TaskChannel as CamelTaskChannel, PacketStatus
 from camel.tasks.task import Task
+
+logger = logging.getLogger(__name__)
 
 class TaskChannel(CamelTaskChannel):
     def __init__(self):
@@ -9,6 +13,7 @@ class TaskChannel(CamelTaskChannel):
         r"""Get a task from the channel that has been returned by the
         assignee.
         """
+        print("Getting task from assignee " + assignee_id)
         async with self._condition:
             while True:
                 for task_id in self._task_id_list:

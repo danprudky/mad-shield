@@ -77,6 +77,7 @@ def summarize_prompt(proposals: str) -> str:
     - An implicit expectation to track the debate's progress.
     """
     return TextPrompt(
-        "Calculate the round number and base on that summarize the following agent responses to the incoming attack: "
+        "Calculate the round number and base on that summarize the following agent responses to the incoming attack, "
+        "into SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS and SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS: "
         f"{proposals}"
     )

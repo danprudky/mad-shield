@@ -34,14 +34,14 @@ def init_prompt(component_name: str, component_description: str) -> str:
         "Every response from you must strictly follow the CRITICIZE FORMAT from round 2 onward.\n\n"
         
         "PROPOSALS FORMAT:\n"
-        "I'm suggesting these proposals:\n"
+        f"I'm {component_name}_lawyer and suggesting these proposals:\n"
         "  [\n"
         "    (<executable cli command>, <justification>),\n"
         "    ...\n"
         "  ]\n\n"
         
         "CRITICIZE FORMAT:\n"
-        "I'm approving these proposals:\n"
+        f"I'm {component_name}_lawyer and approving these proposals:\n"
         "<agent> agent suggests:\n"
         "  [\n"
         "    (<executable cli command>, <justification>) - APPROVED,\n"
@@ -80,9 +80,8 @@ def propose_prompt(attack_alert: str) -> str:
     return TextPrompt(
         "The threat described by this summary has appeared on the network:\n"
         f"{attack_alert}\n"
-        "Review your component settings, evaluate the vulnerability, and design a solution with executable CLI commands in the simplest possible format:\n"
-        "  [ (<executable cli command>, <justification>), ... ]\n"
-        "Provide a brief justification for each command."
+        "Review your component settings, evaluate the vulnerability, and design a solution with executable CLI commands in the "
+        "defined PROPOSALS FORMAT. Don't forget to provide a brief justification for each command."
     )
 
 
