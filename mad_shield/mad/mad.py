@@ -1,14 +1,16 @@
-import os
-from camel.tasks import Task
+import time
 
 from .agents import *
-from ..command import Command
+from mad_shield.mad.tasks.debate import debate_task
 from typing import List
 from typing import TYPE_CHECKING
-import logging
+
+from .agents.summarizer import SummarizerAgent
+from .workforce import Workforce
 
 if TYPE_CHECKING:
     from mad_shield.agents.componentAgent import ComponentAgent
+
 
 class MultiAgentDebate:
 
@@ -17,56 +19,57 @@ class MultiAgentDebate:
         self.components = components
 
         self.lawyers: List[LawyerAgent] = []
+        self.summarizer = None
+        self.judge = None
+        self.workforce = None
 
+    def load_agents(self):
         for component in self.components:
             self.lawyers.append(component.hire_lawyer(self))
 
+        self.summarizer = SummarizerAgent(self)
         self.judge = JudgeAgent(self)
 
+    def load_workforce(self):
+        self.workforce = Workforce(
+            coordinator=self.judge,
+            description="Multiagent debate shield"
+        )
 
-    def debate(self, alert: str) -> List[Command]:
-        # TODO Implement
-        print("Debating...")
-        debate_round = 1
+        for lawyer in self.lawyers:
+            self.workforce.add_single_agent_worker(
+                description=lawyer.role + " is component agent defending his component",
+                worker=lawyer,
+            )
 
-        proposals = self.judge.init_debate(alert)
-        proposal_summary, is_over = self.judge.summarize_debate(proposals)
-        logging.debug(f"\n\n\nProposals in {debate_round}:\n{proposals}")
-        logging.debug(f"Proposal summary:\n{proposal_summary}")
-
-        print(f"Debate round {debate_round} is done")
-        while not is_over and debate_round < self.max_rounds:
-            debate_round += 1
-            proposals = self.judge.get_opinion(proposal_summary, debate_round)
-            logging.debug(f"\n\n\nProposals in {debate_round}:\n{proposals}")
-            logging.debug(f"Proposal summary:\n{proposal_summary}")
-
-            proposal_summary, is_over = self.judge.summarize_debate(proposals)
-            logging.debug(f"Debate round {debate_round} is done")
-
-        if not is_over:
-            logging.debug("Debate ends by max rounds reached")
-
-        logging.debug(proposal_summary)
-
-        # Summarizer extern commands
-        # TODO Implement
-        executable_commands = [
-            ["ssh", "ls -h"],
-            ["ssh", "ls"],
-            ["firewall", "dir"],
-        ]
-
-        result = []
-        for component, command in executable_commands:
-            c = next((c for c in self.components if c.name == component), None)
-            if c is None:
-                raise ValueError(f"Component '{component}' not found")
-            result.append(Command(c, command))
-        return result
+        self.workforce.add_single_agent_worker(
+            description="Summarization agent to condense and extract proposals from each debate round",
+            worker=self.summarizer,
+        )
 
     def get_components_in_str(self) -> str:
         return ", ".join(component.name for component in self.components)
 
-    def task(self):
-        task = Task()
+    def debate(self, alert: str) -> None:
+        start = time.time()
+
+        task = self.workforce.process_task(debate_task(alert))
+
+        print(f"\nDebating tasks: {time.time() - start} seconds")
+        print(task.result)
+
+#        # Summarizer extern commands
+#        # TODO Implement
+#        executable_commands = [
+#            ["ssh", "ls -h"],
+#            ["ssh", "ls"],
+#            ["firewall", "dir"],
+#        ]
+#
+#        result = []
+#        for component, command in executable_commands:
+#            c = next((c for c in self.components if c.name == component), None)
+#            if c is None:
+#                raise ValueError(f"Component '{component}' not found")
+#            result.append(Command(c, command))
+#        return result
