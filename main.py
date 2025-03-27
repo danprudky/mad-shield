@@ -12,7 +12,7 @@ def main() -> None:
         force=True
     )
 
-    mad_shield = MadShield("mad_shield/config/agents.yaml", 3)
+    mad_shield = MadShield("mad_shield/config/agents.yaml", 1)
 
     mad_shield.go("test/alert/sql_injection")
 

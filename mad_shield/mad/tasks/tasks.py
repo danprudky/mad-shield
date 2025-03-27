@@ -70,7 +70,7 @@ TASK1 = Task(
 
 TASK2 = Task(
         id="1.2",
-        content="Aggregates all received proposals and formats them using summary_prompt.",
+        content="Aggregates all received proposals from recently finished workforce tasks and formats them using summary_prompt.",
         type="Summarizer",
     )
 

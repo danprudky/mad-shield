@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from camel.tasks.task import Task
 
 from .agents import *
-from mad_shield.mad.tasks.debate import debate_task
+from mad_shield.mad.tasks.tasks import debate_task
 from .agents.summarizer import SummarizerAgent
-from mad_shield.mad.tasks.debate import TASK1, TASK2, TASK3, TASK4, TASK5, TASK6
+from mad_shield.mad.tasks.tasks import TASK1, TASK2, TASK3, TASK4, TASK5, TASK6
 from .workforce import Workforce
 
 if TYPE_CHECKING:
@@ -57,14 +57,43 @@ class MultiAgentDebate:
     def debate(self, alert: str) -> None:
         start = time.time()
 
-        task = self.workforce.process_tasks(self.load_tasks(alert))
+        debate_round = 1
+        is_consensus = False
+
+        print("Max rounds: " + str(self.max_rounds))
+
+        while not is_consensus and debate_round <= self.max_rounds:
+            round_tasks: List[Task] = self.load_tasks(debate_round, alert)
+            round_tasks = self._extend_lawyers_tasks(round_tasks)
+            print(f"Having {len(round_tasks)} tasks for round {debate_round}")
+            tasks = self.workforce.process_tasks(round_tasks)
+            round_result_task: Task = [task for task in tasks if self.workforce.get_task_assignee(task) == self.workforce.get_summarizer()][0]
+            print(round_result_task.result)
+            debate_round += 1
 
         print(f"\nDebating tasks: {time.time() - start} seconds")
-        print(task.result)
 
     @staticmethod
-    def load_tasks(alert: str) -> List[Task]:
-        return [TASK1.format(alert), TASK2, TASK3, TASK4, TASK5, TASK6]
+    def load_tasks(debate_round: int, alert: str) -> List[Task]:
+        if debate_round == 1:
+            task = TASK1
+            task.additional_info = f"Incoming alert: {alert}"
+            return [task, TASK2]
+        else:
+            return [TASK3, TASK4, TASK5]
+
+    def _extend_lawyers_tasks(self, tasks: List[Task]) -> List[Task]:
+        lawyer_tasks = [task for task in tasks if task.type == "Lawyer"]
+        for task in lawyer_tasks:
+            task_index = tasks.index(task)
+            tasks.remove(task)
+
+            for assignee in self.workforce.get_lawyers():
+                lawyer_task = task.model_copy()
+                lawyer_task.id = task.id + "." + assignee.node_id
+                tasks.insert(task_index, lawyer_task)
+                task_index += 1
+        return tasks
 
     def task_test(self, alert: str) -> None:
         task = debate_task(alert, 3)

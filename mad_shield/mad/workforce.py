@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from operator import index
 from typing import List
 from colorama import Fore
 
@@ -17,7 +18,7 @@ class Workforce(CamelWorkforce):
 
         self._lawyers = None
         self._summarizer = None
-        self._task_in_progress = None
+        self._tasks_in_progress: List[Task] = []
         self._channel: TaskChannel
 
         if coordinator is not None:
@@ -27,7 +28,7 @@ class Workforce(CamelWorkforce):
         self._lawyers = self.get_lawyer_nodes()
         self._summarizer = self.get_summarizer_node()
 
-    def process_tasks(self, tasks: List[Task]) -> Task:
+    def process_tasks(self, tasks: List[Task]) -> List[Task]:
         self.reset()
 
         self._pending_tasks.extendleft(reversed(tasks))
@@ -35,7 +36,13 @@ class Workforce(CamelWorkforce):
 
         asyncio.run(self.start())
 
-        return tasks[0]
+        return tasks
+
+    def get_lawyers(self) -> List[BaseNode]:
+        return self._lawyers
+
+    def get_summarizer(self) -> BaseNode:
+        return self._summarizer
 
     def get_lawyer_nodes(self) -> List[BaseNode]:
         return [child for child in self._children if "lawyer" in child.worker.role_name]
@@ -62,7 +69,8 @@ class Workforce(CamelWorkforce):
             return
 
         ready_task = self._pending_tasks[0]
-        self._task_in_progress = ready_task
+
+        self._tasks_in_progress.append(ready_task)
 
         logger.info(f"Task \"{ready_task.content}\" getting posted.")
 
@@ -81,59 +89,58 @@ class Workforce(CamelWorkforce):
         else:
             # Directly post the task to the channel if it's a new one
             # Find a node to assign the task
-            if ready_task.type == "Lawyer":
-                for assignee in self._lawyers:
-                    lawyer_task = ready_task.model_copy()
-                    lawyer_task.id = ready_task.id + "." + assignee.node_id
-                    await self._post_task(lawyer_task, assignee)
-            elif ready_task.type == "Summarizer":
-                await self._post_task(ready_task, self._summarizer)
-            else:
-                await self._post_task(ready_task, self)
+            assignee = self.get_task_assignee(ready_task)
+            await self._post_task(ready_task, assignee)
 
     async def _listen_to_channel(self) -> None:
         self._running = True
         logger.info(f"Workforce {self.node_id} started.")
 
-        await self._post_ready_tasks()
 
-        logger.info(f"Workforce {self.node_id} await done.")
+        while len(self._pending_tasks) > 0:
+            await self._post_ready_tasks()
+            logger.info(f"Workforce {self.node_id} await done.")
+            returned_task = self._tasks_in_progress.pop()
+            assignee = self.get_task_assignee(returned_task)
+            print("Handling task from assignee " + assignee.node_id)
+            await self._get_returned_task_from_assignee(assignee)
 
-        while self._task_in_progress is not None or self._pending_tasks:
-
-            logger.info(f"Running again because self._pending_tasks is {self._pending_tasks} and self._task_in_progress is {self._task_in_progress is None}.")
-            logger.info(f"This is _task_in_progress: {self._task_in_progress}.")
-
-            if self._task_in_progress.type == "Lawyer":
-                returned_tasks = []
-                for assignee in self._lawyers:
-                    print("Getting returned_task from assignee " + assignee.worker.role_name)
-                    returned_task = await self._get_returned_task_from_assignee(assignee)
-                    returned_tasks.append(returned_task)
-            elif self._task_in_progress.type == "Summarizer":
-                returned_tasks = [await self._get_returned_task_from_assignee(self._summarizer)]
+            if returned_task.state == TaskState.DONE:
+                await self._handle_completed_task(returned_task)
+            elif returned_task.state == TaskState.FAILED:
+                halt = await self._handle_failed_task(returned_task)
+                if not halt:
+                    continue
+                print(
+                    f"{Fore.RED}Task {returned_task.id} has failed "
+                    f"for 3 times, halting the workforce.{Fore.RESET}"
+                )
+                break
+            elif returned_task.state == TaskState.OPEN:
+                # TODO: multi-layer workforce
+                pass
             else:
-                returned_tasks = [await self._get_returned_task_from_assignee(self)]
-
-            for returned_task in returned_tasks:
-                if returned_task.state == TaskState.DONE:
-                    await self._handle_completed_task(returned_task)
-                elif returned_task.state == TaskState.FAILED:
-                    halt = await self._handle_failed_task(returned_task)
-                    if not halt:
-                        continue
-                    print(
-                        f"{Fore.RED}Task {returned_task.id} has failed "
-                        f"for 3 times, halting the workforce.{Fore.RESET}"
-                    )
-                    break
-                elif returned_task.state == TaskState.OPEN:
-                    # TODO: multi-layer workforce
-                    pass
-                else:
-                    raise ValueError(
-                        f"Task {returned_task.id} has an unexpected state."
-                    )
+                raise ValueError(
+                    f"Task {returned_task.id} has an unexpected state."
+                )
 
         # shut down the whole workforce tree
         self.stop()
+
+    async def _handle_completed_task(self, task: Task) -> None:
+        # archive the packet, making it into a dependency
+        self._pending_tasks.popleft()
+        await self._channel.archive_task(task.id)
+
+    def get_task_assignee(self, task: Task) -> BaseNode:
+        if task.type == "Lawyer":
+            assignee_id = task.id.split(".")[2]
+            assignee = next((a for a in self._lawyers if a.node_id == assignee_id), None)
+
+            print("Got task for " + assignee.worker.role_name)
+
+            return assignee
+        elif task.type == "Summarizer":
+            return self._summarizer
+        else:
+            return self
