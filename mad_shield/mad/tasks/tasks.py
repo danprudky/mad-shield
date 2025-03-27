@@ -27,86 +27,28 @@ def debate_task(alert: str, max_rounds: int) -> Task:
                "  ]\n"
                "...",
     )
-
-    #task.add_subtask(
-    #    Task(
-    #        id="1.2",
-    #        content="Summarizer agent summarize all proposals, with summarize_prompt tool and given SUMMARY FORMATS. "
-    #                "Give them back to the coordinator."
-    #    )
-    #)
-#
-    #task.add_subtask(
-    #    Task(
-    #        id="1.1",
-    #        content="Coordinator agent ask asynchronously all lawyer agents for their secure suggestions proposes, as "
-    #                "executable CLI commands, using proposal_prompt tool. They send their proposals back to coordinator.",
-    #    )
-    #)
-#
-    #task.add_subtask(
-    #    Task(
-    #        id="1.3",
-    #        content="Coordinator agent ask asynchronously all lawyers for reaction on all other agents proposals. They should "
-    #                "generate reply using react_prompt tool."
-    #    )
-    #)
-#
-    #task.add_subtask(
-    #    Task(
-    #        id="1.4",
-    #        content="Repeat subtasks 1.2 and then if judge(coordinator) can declare the debate over return results in judge's FINAL PROPOSALS FORMAT."
-    #    )
-    #)
-
     return task
 
-TASK1 = Task(
-        id="1.1",
+TASK_LAWYER_PROPOSE = Task(
         content="Write me your secure suggestions as executable CLI commands, using proposal_prompt tool.",
         type="Lawyer",
-        additional_info="Incoming alert: {alert}",
     )
 
-TASK2 = Task(
-        id="1.2",
-        content="Aggregates all received proposals from recently finished workforce tasks and formats them using summary_prompt.",
+TASK_SUMMARIZE = Task(
+        content="Summarize all messages from lawyer agents in the current round in defined "
+                "SUMMARIZATION FORMAT FOR {debate_round} ROUND PROPOSALS. Use your summarize_tool to do this.",
         type="Summarizer",
     )
 
-TASK3 = Task(
-        id="2.1",
+TASK_LAWYER_CRITICIZE = Task(
         content="Provide a reaction to the proposals of all other agents in CRITICIZE FORMAT using react_prompt tool.",
         type="Lawyer",
     )
 
-TASK4 = Task(
-        id="2.2",
-        content="Aggregates all received proposals and formats them using summary_prompt.",
-        type="Summarizer",
-    )
-
 TASK5 = Task(
-        id="2.3",
         content="Coordinator agent evaluates whether all agents have approved all proposals. "
                 "If not, another round of critique is requested (repeat subtasks of 2). "
                 "If the debate has reached {max_rounds} rounds, or all proposals are approved, the debate is ended with FINAL PROPOSALS FORMAT."
-                
-                "FINAL PROPOSALS FORMAT:\n"
-                "DEBATE IS OVER!\n"
-                "Here are all approved suggestions of all agents:\n"
-                "  [\n"
-                "    (<agent>, <executable cli command>),\n"
-                "    (<agent>, <executable cli command>),\n"
-                "  ]\n"
-                "...",
-        type="Coordinator",
-    )
-
-TASK6 = Task(
-        id="3",
-        content="If all proposals have been approved or the maximum round count has been reached, "
-                "Coordinator agent outputs the final data strictly in the FINAL PROPOSALS FORMAT below."
                 
                 "FINAL PROPOSALS FORMAT:\n"
                 "DEBATE IS OVER!\n"

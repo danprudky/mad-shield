@@ -24,13 +24,13 @@ class Workforce(CamelWorkforce):
         if coordinator is not None:
             self.coordinator_agent = coordinator
 
+        self.reset()
+
     def load_children_data(self):
         self._lawyers = self.get_lawyer_nodes()
         self._summarizer = self.get_summarizer_node()
 
     def process_tasks(self, tasks: List[Task]) -> List[Task]:
-        self.reset()
-
         self._pending_tasks.extendleft(reversed(tasks))
         self.set_channel(TaskChannel())
 
@@ -51,7 +51,7 @@ class Workforce(CamelWorkforce):
         return [child for child in self._children if "summarizer" in child.worker.role_name][0]
 
     async def _post_task(self, task: Task, assignee: BaseNode) -> None:
-        print(f"Posting task to \"{assignee.node_id}\"") #TODO: DAN SMAZAT
+        print(f"\nPosting task to \"{assignee.node_id}\"") #TODO: DAN SMAZAT
         await self._channel.post_task(task, self.node_id, assignee.node_id)
 
     async def _post_dependency(self, dependency: Task) -> None:
@@ -89,8 +89,8 @@ class Workforce(CamelWorkforce):
         else:
             # Directly post the task to the channel if it's a new one
             # Find a node to assign the task
-            assignee = self.get_task_assignee(ready_task)
-            await self._post_task(ready_task, assignee)
+            self._working_assignee = self.get_task_assignee(ready_task)
+            await self._post_task(ready_task, self._working_assignee)
 
     async def _listen_to_channel(self) -> None:
         self._running = True
@@ -99,11 +99,9 @@ class Workforce(CamelWorkforce):
 
         while len(self._pending_tasks) > 0:
             await self._post_ready_tasks()
-            logger.info(f"Workforce {self.node_id} await done.")
             returned_task = self._tasks_in_progress.pop()
-            assignee = self.get_task_assignee(returned_task)
-            print("Handling task from assignee " + assignee.node_id)
-            await self._get_returned_task_from_assignee(assignee)
+            print("Handling task from assignee " + self._working_assignee.node_id)
+            await self._get_returned_task_from_assignee(self._working_assignee)
 
             if returned_task.state == TaskState.DONE:
                 await self._handle_completed_task(returned_task)
@@ -136,9 +134,6 @@ class Workforce(CamelWorkforce):
         if task.type == "Lawyer":
             assignee_id = task.id.split(".")[2]
             assignee = next((a for a in self._lawyers if a.node_id == assignee_id), None)
-
-            print("Got task for " + assignee.worker.role_name)
-
             return assignee
         elif task.type == "Summarizer":
             return self._summarizer

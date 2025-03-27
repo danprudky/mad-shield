@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING
 from camel.tasks.task import Task
 
 from .agents import *
-from mad_shield.mad.tasks.tasks import debate_task
 from .agents.summarizer import SummarizerAgent
-from mad_shield.mad.tasks.tasks import TASK1, TASK2, TASK3, TASK4, TASK5, TASK6
+from mad_shield.mad.tasks.tasks import TASK_LAWYER_PROPOSE, TASK_SUMMARIZE, TASK_LAWYER_CRITICIZE
 from .workforce import Workforce
 
 if TYPE_CHECKING:
@@ -75,12 +74,22 @@ class MultiAgentDebate:
 
     @staticmethod
     def load_tasks(debate_round: int, alert: str) -> List[Task]:
+        lawyers_task = TASK_LAWYER_PROPOSE if debate_round == 1 else TASK_LAWYER_CRITICIZE
+        summarizer_task = TASK_SUMMARIZE
+
         if debate_round == 1:
-            task = TASK1
-            task.additional_info = f"Incoming alert: {alert}"
-            return [task, TASK2]
+            lawyers_task.additional_info = f"Incoming alert: {alert}"
+            summarizer_task.content = summarizer_task.content.format(debate_round='FIRST')
         else:
-            return [TASK3, TASK4, TASK5]
+            summarizer_task.content = summarizer_task.content.format(debate_round='HIGHER')
+
+        print(summarizer_task.content)
+
+        lawyers_task.id = f"{debate_round}.1"
+
+        summarizer_task.id = f"{debate_round}.2"
+
+        return [lawyers_task, summarizer_task]
 
     def _extend_lawyers_tasks(self, tasks: List[Task]) -> List[Task]:
         lawyer_tasks = [task for task in tasks if task.type == "Lawyer"]
@@ -94,13 +103,6 @@ class MultiAgentDebate:
                 tasks.insert(task_index, lawyer_task)
                 task_index += 1
         return tasks
-
-    def task_test(self, alert: str) -> None:
-        task = debate_task(alert, 3)
-
-        new_tasks = task.decompose(agent=self.judge)
-        for t in new_tasks:
-            print(t.to_string())
 
 #        # Summarizer extern commands
 #        # TODO Implement
