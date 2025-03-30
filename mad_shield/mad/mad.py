@@ -90,22 +90,18 @@ class MultiAgentDebate:
 
         print(f"\nDebating tasks: {time.time() - start} seconds")
 
-        self.workforce.stop()
-
         return self.parse_debate_result(round_result)
 
     def load_tasks(self, debate_round: int, alert: str) -> List[Task]:
         lawyers_task = TASK_LAWYER_PROPOSE if debate_round <= 1 else TASK_LAWYER_CRITICIZE
         summarizer_task = TASK_SUMMARIZE
-        coordinator_task = TASK_END_DEBATE
+        coordinator_task = TASK_JUDGE_DEBATE if debate_round < self.max_rounds else TASK_END_DEBATE
 
         if debate_round <= 1:
             lawyers_task.additional_info = f"Incoming alert: {alert}"
             summarizer_task.content = summarizer_task.content.format(debate_round='FIRST')
         else:
             summarizer_task.content = summarizer_task.content.format(debate_round='HIGHER')
-            coordinator_task.additional_info = f"Current debate round: {debate_round}"
-            coordinator_task.content = coordinator_task.content.format(max_rounds=self.max_rounds)
 
         lawyers_task.id = f"{debate_round}.1"
 
@@ -155,9 +151,9 @@ class MultiAgentDebate:
             raise ValueError(f"Error parsing debate result: {e}")
 
         for agent_name, command in approved_commands:
-            lawyer = [agent for agent in self.lawyers if agent.role == agent_name][0]
-            if lawyer:
-                commands_list.append(Command(lawyer.component, command))
+            lawyer_candidates = [agent for agent in self.lawyers if agent.role == agent_name]
+            if len(lawyer_candidates) >= 1:
+                commands_list.append(Command(lawyer_candidates[0].component, command))
             else:
                 raise ValueError(f"Unknown agent: {agent_name}")
 

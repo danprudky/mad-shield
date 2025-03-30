@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from operator import index
+
 from typing import List
 from colorama import Fore
 
@@ -13,19 +13,14 @@ from .task_channel import TaskChannel
 logger = logging.getLogger(__name__)
 
 class Workforce(CamelWorkforce):
-    def __init__(self, coordinator = None, **kwargs):
+    def __init__(self, **kwargs):
         super(Workforce, self).__init__(**kwargs)
 
         self._lawyers = None
         self._summarizer = None
         self._judge = None
         self._tasks_in_progress: List[Task] = []
-        self._channel: TaskChannel
-
-        if coordinator is not None:
-            self.coordinator_agent = coordinator
-
-        self.reset()
+        self._debate_channel: TaskChannel = TaskChannel()
 
     def load_children_data(self):
         self._lawyers = self.get_lawyer_nodes()
@@ -33,10 +28,16 @@ class Workforce(CamelWorkforce):
         self._judge = self.get_judge_node()
 
     def process_tasks(self, tasks: List[Task]) -> List[Task]:
-        self._pending_tasks.extendleft(reversed(tasks))
-        self.set_channel(TaskChannel())
+        self.reset()
 
-        asyncio.run(self.start())
+        self._pending_tasks.extendleft(reversed(tasks))
+
+        self.set_channel(self._debate_channel)
+
+        if not self._debate_channel.get_loop().is_running():
+            self._debate_channel.get_loop().run_until_complete(self.start())
+        else:
+            asyncio.ensure_future(self.start())
 
         return tasks
 
@@ -99,7 +100,6 @@ class Workforce(CamelWorkforce):
     async def _listen_to_channel(self) -> None:
         self._running = True
 
-
         while len(self._pending_tasks) > 0:
             await self._post_ready_tasks()
             returned_task = self._tasks_in_progress.pop()
@@ -111,6 +111,7 @@ class Workforce(CamelWorkforce):
                 halt = await self._handle_failed_task(returned_task)
                 if not halt:
                     continue
+                self.stop()
                 print(
                     f"{Fore.RED}Task {returned_task.id} has failed "
                     f"for 3 times, halting the workforce.{Fore.RESET}"
@@ -124,7 +125,6 @@ class Workforce(CamelWorkforce):
                     f"Task {returned_task.id} has an unexpected state."
                 )
 
-        # shut down the whole workforce tree
         self.stop()
 
     async def _handle_completed_task(self, task: Task) -> None:

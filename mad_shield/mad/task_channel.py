@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from camel.societies.workforce.task_channel import TaskChannel as CamelTaskChannel, PacketStatus
@@ -8,6 +9,10 @@ logger = logging.getLogger(__name__)
 class TaskChannel(CamelTaskChannel):
     def __init__(self):
         super(TaskChannel, self).__init__()
+        self._loop = asyncio.get_event_loop()
+
+    def get_loop(self) -> asyncio.AbstractEventLoop:
+        return self._loop
 
     async def get_returned_task_by_assignee(self, assignee_id: str) -> Task:
         r"""Get a task from the channel that has been returned by the
