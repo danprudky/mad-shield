@@ -13,4 +13,4 @@ class JudgeAgent(DebateAgent):
         super().__init__(mad, "judge")
 
     def get_init_msg(self) -> str:
-        return init_prompt(self.mad.get_components_in_str(), self.mad.max_rounds)
+        return init_prompt(self.mad.get_components_in_str())

@@ -1,4 +1,5 @@
 import logging
+import textwrap
 
 from mad_shield import *
 
@@ -12,7 +13,7 @@ def main() -> None:
         force=True
     )
 
-    mad_shield = MadShield("mad_shield/config/agents.yaml", 2)
+    mad_shield = MadShield("mad_shield/config/agents.yaml", 3)
 
     mad_shield.go("test/alert/sql_injection")
 

@@ -18,6 +18,7 @@ class Workforce(CamelWorkforce):
 
         self._lawyers = None
         self._summarizer = None
+        self._judge = None
         self._tasks_in_progress: List[Task] = []
         self._channel: TaskChannel
 
@@ -29,6 +30,7 @@ class Workforce(CamelWorkforce):
     def load_children_data(self):
         self._lawyers = self.get_lawyer_nodes()
         self._summarizer = self.get_summarizer_node()
+        self._judge = self.get_judge_node()
 
     def process_tasks(self, tasks: List[Task]) -> List[Task]:
         self._pending_tasks.extendleft(reversed(tasks))
@@ -44,14 +46,19 @@ class Workforce(CamelWorkforce):
     def get_summarizer(self) -> BaseNode:
         return self._summarizer
 
+    def get_judge(self) -> BaseNode:
+        return self._judge
+
     def get_lawyer_nodes(self) -> List[BaseNode]:
         return [child for child in self._children if "lawyer" in child.worker.role_name]
 
     def get_summarizer_node(self) -> BaseNode:
         return [child for child in self._children if "summarizer" in child.worker.role_name][0]
 
+    def get_judge_node(self):
+        return [child for child in self._children if "judge" in child.worker.role_name][0]
+
     async def _post_task(self, task: Task, assignee: BaseNode) -> None:
-        print(f"\nPosting task to \"{assignee.node_id}\"") #TODO: DAN SMAZAT
         await self._channel.post_task(task, self.node_id, assignee.node_id)
 
     async def _post_dependency(self, dependency: Task) -> None:
@@ -61,7 +68,6 @@ class Workforce(CamelWorkforce):
         r"""Get the task that's published by this node and just get returned
         from the assignee.
         """
-        print("Requesting task from assignee " + assignee.node_id)
         return await self._channel.get_returned_task_by_assignee(assignee.node_id)  #TODO: Dotypovvat
 
     async def _post_ready_tasks(self) -> None:
@@ -71,8 +77,6 @@ class Workforce(CamelWorkforce):
         ready_task = self._pending_tasks[0]
 
         self._tasks_in_progress.append(ready_task)
-
-        logger.info(f"Task \"{ready_task.content}\" getting posted.")
 
         # If the task has failed previously, just compose and send the task
         # to the channel as a dependency
@@ -94,13 +98,11 @@ class Workforce(CamelWorkforce):
 
     async def _listen_to_channel(self) -> None:
         self._running = True
-        logger.info(f"Workforce {self.node_id} started.")
 
 
         while len(self._pending_tasks) > 0:
             await self._post_ready_tasks()
             returned_task = self._tasks_in_progress.pop()
-            print("Handling task from assignee " + self._working_assignee.node_id)
             await self._get_returned_task_from_assignee(self._working_assignee)
 
             if returned_task.state == TaskState.DONE:
@@ -138,4 +140,4 @@ class Workforce(CamelWorkforce):
         elif task.type == "Summarizer":
             return self._summarizer
         else:
-            return self
+            return self._judge

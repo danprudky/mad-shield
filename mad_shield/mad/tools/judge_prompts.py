@@ -1,7 +1,7 @@
 from camel.prompts import TextPrompt
 
 
-def init_prompt(component_list: str, max_rounds: int) -> str:
+def init_prompt(component_list: str) -> str:
     """
     Generates the initial prompt for coordinating a multi-agent debate.
 
@@ -12,7 +12,6 @@ def init_prompt(component_list: str, max_rounds: int) -> str:
 
     Args:
         component_list (str): A comma-separated string of component names representing the agents.
-        max_rounds (int): The maximum number of rounds that the debate will run for.
 
     Returns:
         str: A formatted prompt string outlining the debate rules, structure, and expected summarization formats.
@@ -24,13 +23,24 @@ def init_prompt(component_list: str, max_rounds: int) -> str:
     - Specific formats for final approved proposals.
     """
     return TextPrompt(
-        "YOUR IDENTITY:\n"
-        f"I need you to be a Coordinator in a multi-agent debate in which there are lawyer agents representing the {component_list} components. "
-        "The debate should start immediately with the lawyer agents proposing their secure suggestions for the incoming attack alert. "
-        "You are responsible for collecting these proposals, coordinating the subsequent rounds, and eventually ending the debate. "
-        "I will provide you with the FINAL PROPOSALS FORMAT (which you must use to end the workforce task). \n\n"
+        "ROLE:\n"
+        f"You are the **Judge** in a multi-agent debate. Your task is to oversee a discussion between **lawyer agents**, each representing one of the following components: {component_list}.\n\n"
 
+        "OBJECTIVE:\n"
+        "Lawyer agents will debate the **best set of executable commands** to protect the system against an incoming attack. Your responsibilities are:\n"
+        "1. **Determine whether consensus has been reached** at the end of each round.\n"
+        "2. **End the debate** if consensus is reached or if the maximum number of rounds is exceeded.\n"
+        "3. **Respond in the correct format** based on the debate's outcome.\n\n"
+
+        "CONSENSUS RULES:\n"
+        "- Consensus is reached if **all lawyer agents agree** on all proposals, and no proposals remain under discussion.\n"
+        "- If consensus is reached, respond using the **FINAL PROPOSALS FORMAT**.\n"
+        "- If consensus **is not reached** and the debate ends due to the maximum number of rounds, respond with the same format but **omit proposals still under discussion**.\n"
+        "- If consensus **is not reached** and the debate is still ongoing, respond with: **'DEBATE HAS TO CONTINUE'**.\n\n"
+        
         "FINAL PROPOSALS FORMAT:\n"
+        
+        "DEBATE IS OVER!\n"
         "Here are all approved suggestions of all agents:\n"
         "  [\n"
         "    (<agent>, <executable cli command>),\n"
@@ -38,3 +48,4 @@ def init_prompt(component_list: str, max_rounds: int) -> str:
         "  ]\n"
         "...",
     )
+

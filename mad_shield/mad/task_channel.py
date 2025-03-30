@@ -13,7 +13,6 @@ class TaskChannel(CamelTaskChannel):
         r"""Get a task from the channel that has been returned by the
         assignee.
         """
-        print("Getting task from assignee " + assignee_id)
         async with self._condition:
             while True:
                 for task_id in self._task_id_list:
