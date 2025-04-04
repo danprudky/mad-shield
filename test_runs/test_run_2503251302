@@ -1,0 +1,363 @@
+/Users/danielprudky/projects/vut/mad-shield/.venv/bin/python /Users/danielprudky/projects/vut/mad-shield/main.py
+Posting task to "firewall_lawyer"
+Posting task to "server_lawyer"
+Posting task to "dns_lawyer"
+Posting task to "netplan_lawyer"
+Posting task to "ssh_lawyer"
+Getting returned_task from assignee firewall_lawyer
+Requesting task from assignee
+Getting task from assignee
+Worker node 5080104736 (firewall_lawyer is component agent defending his component) get task 1.1.5080104736: Coordinator agent asks only lawyer agents asynchronously for their secure suggestions as executable CLI commands, using proposal_prompt tool. They send their proposals back to the coordinator.
+======
+Reply from Worker node 5080104736 (firewall_lawyer is component agent defending his component):
+
+I'm suggesting these proposals:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access."),
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception."),
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.")
+  ]
+======Worker node 5075080576 (server_lawyer is component agent defending his component) get task 1.1.5075080576: Coordinator agent asks only lawyer agents asynchronously for their secure suggestions as executable CLI commands, using proposal_prompt tool. They send their proposals back to the coordinator.
+======
+Reply from Worker node 5075080576 (server_lawyer is component agent defending his component):
+
+I'm suggesting these proposals:
+  [
+    ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall.") ,
+    ("sudo systemctl restart apache2", "Restarting Apache ensures that any configuration changes are applied immediately, which is crucial for maintaining security settings.") ,
+    ("sudo a2enmod rewrite", "Enabling the rewrite module allows for better URL management and can help mitigate certain types of attacks by controlling URL access.") ,
+    ("sudo apt-get update && sudo apt-get upgrade -y", "Regularly updating the server ensures that all software, including Apache, is up to date with the latest security patches.") ,
+    ("sudo nano /etc/apache2/apache2.conf", "Editing the main Apache configuration file allows for the implementation of additional security measures, such as limiting request methods.")
+  ]
+======Worker node 5244497328 (dns_lawyer is component agent defending his component) get task 1.1.5244497328: Coordinator agent asks only lawyer agents asynchronously for their secure suggestions as executable CLI commands, using proposal_prompt tool. They send their proposals back to the coordinator.
+======
+Reply from Worker node 5244497328 (dns_lawyer is component agent defending his component):
+
+I'm suggesting these proposals:
+  [
+    ("iptables -A INPUT -p udp --dport 53 -m limit --limit 5/s --limit-burst 10 -j ACCEPT", "This command limits the number of incoming DNS requests to prevent overwhelming the server during a DDoS attack."),
+    ("iptables -A INPUT -p udp --dport 53 -j DROP", "This command drops any DNS requests that exceed the limit set by the previous command, helping to mitigate the attack further."),
+    ("systemctl restart named", "This command restarts the DNS service to clear any potential overload and restore normal operations after an attack.")
+  ]
+
+
+======Worker node 5244179216 (netplan_lawyer is component agent defending his component) get task 1.1.5244179216: Coordinator agent asks only lawyer agents asynchronously for their secure suggestions as executable CLI commands, using proposal_prompt tool. They send their proposals back to the coordinator.
+======
+Reply from Worker node 5244179216 (netplan_lawyer is component agent defending his component):
+
+I'm suggesting these proposals:
+  [
+    ("sudo ufw enable", "Enables the Uncomplicated Firewall to block unauthorized access attempts to the network."),
+    ("sudo ufw allow from 192.168.1.0/24", "Allows traffic from the local network to ensure legitimate access is not blocked."),
+    ("sudo systemctl restart systemd-networkd", "Restarts the network service to apply any changes made to the network configuration."),
+    ("sudo apt-get update && sudo apt-get upgrade", "Updates the system to ensure all security patches are applied, reducing vulnerabilities.")
+  ]
+======Worker node 5244179024 (ssh_lawyer is component agent defending his component) get task 1.1.5244179024: Coordinator agent asks only lawyer agents asynchronously for their secure suggestions as executable CLI commands, using proposal_prompt tool. They send their proposals back to the coordinator.
+======
+Reply from Worker node 5244179024 (ssh_lawyer is component agent defending his component):
+
+I'm suggesting these proposals:
+  [
+    ("chmod 700 /path/to/private/key", "Restrict access to the private key to only the owner, enhancing security against unauthorized access."),
+    ("ssh-keygen -t rsa -b 4096 -f /path/to/new/key", "Generate a new SSH key with a strong encryption algorithm to ensure secure authentication."),
+    ("ssh-copy-id -i /path/to/new/key.pub adminuser@remote_host", "Copy the public key to the remote host for passwordless authentication, improving security by eliminating password usage."),
+    ("ufw allow 2222/tcp", "Allow incoming connections on the specified SSH port (2222) to ensure accessibility while maintaining security."),
+    ("systemctl restart sshd", "Restart the SSH service to apply any configuration changes made to the sshd_config file."),
+    ("fail2ban-client start", "Start Fail2Ban to protect against brute-force attacks by banning IPs that show malicious signs."),
+    ("iptables -A INPUT -p tcp --dport 2222 -j ACCEPT", "Add a firewall rule to allow traffic on the custom SSH port, ensuring only legitimate traffic is permitted.")
+  ]
+======Getting returned_task from assignee server_lawyer
+Requesting task from assignee
+Getting task from assignee
+Getting returned_task from assignee dns_lawyer
+Requesting task from assignee
+Getting task from assignee
+Getting returned_task from assignee netplan_lawyer
+Requesting task from assignee
+Getting task from assignee
+Getting returned_task from assignee ssh_lawyer
+Requesting task from assignee
+Getting task from assignee
+Posting task to "summarizer"
+Posting task to "firewall_lawyer"
+Posting task to "server_lawyer"
+Posting task to "dns_lawyer"
+Posting task to "netplan_lawyer"
+Posting task to "ssh_lawyer"
+Posting task to "summarizer"
+Worker node 5080104736 (firewall_lawyer is component agent defending his component) get task 1.3.5080104736: Coordinator agent asynchronously requests all lawyers to provide a reaction to the proposals of all other agents in CRITICIZE FORMAT using react_prompt tool. They send their reactions back to the coordinator.
+======
+Reply from Worker node 5080104736 (firewall_lawyer is component agent defending his component):
+
+I'm approving these proposals:
+Agent 1 suggests:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.") - APPROVED,
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.") - APPROVED
+  ]
+I disagree on these proposals:
+Agent 2 suggests:
+  ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall."),
+  because it is too permissive and does not restrict access to trusted IPs, and suggesting alternative:
+  [ ("sudo ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("sudo ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.") ]
+I disagree on these proposals:
+Agent 3 suggests:
+  ("systemctl restart named", "This command restarts the DNS service to clear any potential overload and restore normal operations after an attack."),
+  because it does not address the root cause of the overload, and suggesting alternative:
+  [ ("iptables -A INPUT -p udp --dport 53 -m limit --limit 5/s --limit-burst 10 -j ACCEPT", "This command limits the number of incoming DNS requests to prevent overwhelming the server during a DDoS attack."),
+    ("iptables -A INPUT -p udp --dport 53 -j DROP", "This command drops any DNS requests that exceed the limit set by the previous command, helping to mitigate the attack further.") ]
+I disagree on these proposals:
+Agent 4 suggests:
+  ("sudo ufw allow from 192.168.1.0/24", "Allows traffic from the local network to ensure legitimate access is not blocked."),
+  because it may expose the network to internal threats if not properly managed, and suggesting alternative:
+  [ ("sudo ufw allow from <trusted_ip> to any", "Allow access only from trusted IP addresses to enhance security against unauthorized access.") ]
+
+======Worker node 5075080576 (server_lawyer is component agent defending his component) get task 1.3.5075080576: Coordinator agent asynchronously requests all lawyers to provide a reaction to the proposals of all other agents in CRITICIZE FORMAT using react_prompt tool. They send their reactions back to the coordinator.
+======
+Reply from Worker node 5075080576 (server_lawyer is component agent defending his component):
+
+I'm approving these proposals:
+1.1.5080104736 agent suggests:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.") - APPROVED,
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.") - APPROVED
+  ]
+I disagree on these proposals:
+1.1.5075080576 agent suggests:
+  ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall."),
+  because it is too permissive and does not restrict access to trusted IPs, and suggesting alternative:
+  [ ("sudo ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("sudo ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.") ]
+I disagree on these proposals:
+1.1.5244497328 agent suggests:
+  ("iptables -A INPUT -p udp --dport 53 -m limit --limit 5/s --limit-burst 10 -j ACCEPT", "This command limits the number of incoming DNS requests to prevent overwhelming the server during a DDoS attack."),
+  because it may not be sufficient for larger attacks, and suggesting alternative:
+  [ ("iptables -A INPUT -p udp --dport 53 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "This command increases the limit to better handle potential DDoS attacks while still providing some level of protection."),
+    ("iptables -A INPUT -p udp --dport 53 -j DROP", "This command drops any DNS requests that exceed the limit set by the previous command, helping to mitigate the attack further.") ]
+I disagree on these proposals:
+1.1.5244179216 agent suggests:
+  ("sudo ufw allow from 192.168.1.0/24", "Allows traffic from the local network to ensure legitimate access is not blocked."),
+  because it does not specify trusted IPs and could allow unwanted access, and suggesting alternative:
+  [ ("sudo ufw allow from <trusted_ip> to any", "Allows traffic only from trusted IP addresses to ensure legitimate access is not blocked.") ]
+
+======Worker node 5244497328 (dns_lawyer is component agent defending his component) get task 1.3.5244497328: Coordinator agent asynchronously requests all lawyers to provide a reaction to the proposals of all other agents in CRITICIZE FORMAT using react_prompt tool. They send their reactions back to the coordinator.
+======
+Reply from Worker node 5244497328 (dns_lawyer is component agent defending his component):
+
+I'm approving these proposals:
+Agent 1 suggests:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted_ip addresses to ensure secure communication and reduce risk of interception.") - APPROVED,
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.") - APPROVED
+  ]
+
+I disagree on these proposals:
+Agent 2 suggests:
+  ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall."),
+  because it may expose the server to unnecessary risks if not properly restricted to trusted IPs, and suggesting alternative:
+  [
+    ("sudo ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("sudo ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.")
+  ]
+
+I disagree on these proposals:
+Agent 3 suggests:
+  ("systemctl restart named", "This command restarts the DNS service to clear any potential overload and restore normal operations after an attack."),
+  because it may not address the root cause of the DDoS attack and could lead to further service disruption, and suggesting alternative:
+  [
+    ("systemctl stop named", "Temporarily stopping the DNS service can help mitigate the attack while further analysis is conducted."),
+    ("systemctl start named", "Restarting the service after ensuring that the attack has subsided can help restore normal operations safely.")
+  ]
+
+I disagree on these proposals:
+Agent 4 suggests:
+  ("sudo ufw allow from 192.168.1.0/24", "Allows traffic from the local network to ensure legitimate access is not blocked."),
+  because it may not be specific enough to prevent unauthorized access from within the local network, and suggesting alternative:
+  [
+    ("sudo ufw allow from <specific_trusted_ip> to any", "Allow access only from specific trusted IP addresses to enhance security.")
+  ]
+
+
+======Worker node 5244179216 (netplan_lawyer is component agent defending his component) get task 1.3.5244179216: Coordinator agent asynchronously requests all lawyers to provide a reaction to the proposals of all other agents in CRITICIZE FORMAT using react_prompt tool. They send their reactions back to the coordinator.
+======
+Reply from Worker node 5244179216 (netplan_lawyer is component agent defending his component):
+
+I'm approving these proposals:
+1.1.5080104736 agent suggests:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.") - APPROVED,
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.") - APPROVED
+  ]
+I disagree on these proposals:
+1.1.5075080576 agent suggests:
+  ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall."),
+  because allowing full access to Apache can expose the server to unnecessary risks. Instead, I suggest:
+  [
+    ("sudo ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("sudo ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.")
+  ]
+I disagree on these proposals:
+1.1.5244497328 agent suggests:
+  ("iptables -A INPUT -p udp --dport 53 -m limit --limit 5/s --limit-burst 10 -j ACCEPT", "This command limits the number of incoming DNS requests to prevent overwhelming the server during a DDoS attack."),
+  because while limiting requests is good, it may still allow for a DDoS attack if the limit is too high. Instead, I suggest:
+  [
+    ("iptables -A INPUT -p udp --dport 53 -m limit --limit 2/s --limit-burst 5 -j ACCEPT", "This command sets a stricter limit on incoming DNS requests to better mitigate DDoS attacks."),
+    ("iptables -A INPUT -p udp --dport 53 -j DROP", "This command drops any DNS requests that exceed the limit set by the previous command, helping to mitigate the attack further.")
+  ]
+I disagree on these proposals:
+1.1.5244179216 agent suggests:
+  ("sudo ufw enable", "Enables the Uncomplicated Firewall to block unauthorized access attempts to the network."),
+  because enabling the firewall is essential, but it should be configured properly first. Instead, I suggest:
+  [
+    ("sudo ufw default deny incoming", "Sets the default policy to deny all incoming connections before enabling the firewall."),
+    ("sudo ufw enable", "Enables the Uncomplicated Firewall to block unauthorized access attempts to the network.")
+  ]
+
+======Worker node 5244179024 (ssh_lawyer is component agent defending his component) get task 1.3.5244179024: Coordinator agent asynchronously requests all lawyers to provide a reaction to the proposals of all other agents in CRITICIZE FORMAT using react_prompt tool. They send their reactions back to the coordinator.
+======
+Reply from Worker node 5244179024 (ssh_lawyer is component agent defending his component):
+
+I'm approving these proposals:
+1.1.5080104736 agent suggests:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks.") - APPROVED,
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.") - APPROVED,
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.") - APPROVED
+  ]
+I disagree on these proposals:
+1.1.5075080576 agent suggests:
+  ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall."),
+  because allowing 'Apache Full' may expose the server to unnecessary risks if not properly restricted to trusted IPs, and suggesting alternative:
+  [
+    ("sudo ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("sudo ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception.")
+  ]
+I disagree on these proposals:
+1.1.5244497328 agent suggests:
+  ("systemctl restart named", "This command restarts the DNS service to clear any potential overload and restore normal operations after an attack."),
+  because restarting the service without addressing the underlying issue may not resolve the problem, and suggesting alternative:
+  [
+    ("systemctl stop named", "Stop the DNS service to prevent further overload during an attack."),
+    ("systemctl start named", "Start the DNS service again after ensuring the attack has been mitigated.")
+  ]
+I disagree on these proposals:
+1.1.5244179216 agent suggests:
+  ("sudo ufw allow from 192.168.1.0/24", "Allows traffic from the local network to ensure legitimate access is not blocked."),
+  because this may allow access from potentially compromised devices within the local network, and suggesting alternative:
+  [
+    ("sudo ufw allow from <trusted_ip> to any", "Allow access only from specific trusted IP addresses to enhance security.")
+  ]
+======Worker node 5271365792 (summarizer agent to condense and extract proposals from each debate round) get task 1.2: Summarizer agent aggregates all received proposals, formats them using summary_prompt, and sends them back to the coordinator.
+======
+Reply from Worker node 5271365792 (summarizer agent to condense and extract proposals from each debate round):
+
+Here are the suggestions of the lawyer agents:
+Firewall agent suggests:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "Allow SSH access only from trusted IP addresses to enhance security against unauthorized access."),
+    ("ufw allow from <trusted_ip> to any port 80", "Allow HTTP access only from trusted IP addresses to minimize exposure to potential attacks."),
+    ("ufw allow from <trusted_ip> to any port 443", "Allow HTTPS access only from trusted IP addresses to ensure secure communication and reduce risk of interception."),
+    ("ufw deny from any to any", "Deny all other incoming connections to protect the system from unauthorized access and potential attacks.")
+  ]
+Server agent suggests:
+  [
+    ("sudo ufw allow 'Apache Full'", "This command allows traffic for both HTTP and HTTPS, ensuring that the web server is accessible while maintaining a firewall."),
+    ("sudo systemctl restart apache2", "Restarting Apache ensures that any configuration changes are applied immediately, which is crucial for maintaining security settings."),
+    ("sudo a2enmod rewrite", "Enabling the rewrite module allows for better URL management and can help mitigate certain types of attacks by controlling URL access."),
+    ("sudo apt-get update && sudo apt-get upgrade -y", "Regularly updating the server ensures that all software, including Apache, is up to date with the latest security patches."),
+    ("sudo nano /etc/apache2/apache2.conf", "Editing the main Apache configuration file allows for the implementation of additional security measures, such as limiting request methods.")
+  ]
+DNS agent suggests:
+  [
+    ("iptables -A INPUT -p udp --dport 53 -m limit --limit 5/s --limit-burst 10 -j ACCEPT", "This command limits the number of incoming DNS requests to prevent overwhelming the server during a DDoS attack."),
+    ("iptables -A INPUT -p udp --dport 53 -j DROP", "This command drops any DNS requests that exceed the limit set by the previous command, helping to mitigate the attack further."),
+    ("systemctl restart named", "This command restarts the DNS service to clear any potential overload and restore normal operations after an attack.")
+  ]
+Netplan agent suggests:
+  [
+    ("sudo ufw enable", "Enables the Uncomplicated Firewall to block unauthorized access attempts to the network."),
+    ("sudo ufw allow from 192.168.1.0/24", "Allows traffic from the local network to ensure legitimate access is not blocked."),
+    ("sudo systemctl restart systemd-networkd", "Restarts the network service to apply any changes made to the network configuration."),
+    ("sudo apt-get update && sudo apt-get upgrade", "Updates the system to ensure all security patches are applied, reducing vulnerabilities.")
+  ]
+
+======Worker node 5271365792 (summarizer agent to condense and extract proposals from each debate round) get task 1.4: Summarizer agent aggregates all received critiques and sends them back to the coordinator.
+======
+Reply from Worker node 5271365792 (summarizer agent to condense and extract proposals from each debate round):
+
+Here are the critiques of the lawyer agents:
+Firewall agent critiques:
+  [
+    ("ufw allow from <trusted_ip> to any port 22", "This command is effective for securing SSH access, but it requires careful management of trusted IPs to avoid locking out legitimate users."),
+    ("ufw allow from <trusted_ip> to any port 80", "While this enhances security, it may limit access for users who need to connect from different locations."),
+    ("ufw allow from <trusted_ip> to any port 443", "This is a good practice for secure communications, but similar to port 80, it requires management of trusted IPs."),
+    ("ufw deny from any to any", "This is a strong security measure, but it may inadvertently block necessary services if not configured properly.")
+  ]
+Server agent critiques:
+  [
+    ("sudo ufw allow 'Apache Full'", "This command is essential for web accessibility, but it opens up both HTTP and HTTPS, which may not be necessary for all applications."),
+    ("sudo systemctl restart apache2", "Restarting Apache is crucial, but it may cause temporary downtime for users."),
+    ("sudo a2enmod rewrite", "This is beneficial for URL management, but it may introduce complexity in configuration that could lead to errors."),
+    ("sudo apt-get update && sudo apt-get upgrade -y", "Regular updates are vital, but they can sometimes introduce new bugs or compatibility issues."),
+    ("sudo nano /etc/apache2/apache2.conf", "Editing the configuration file is necessary, but it requires careful attention to avoid misconfigurations.")
+  ]
+DNS agent critiques:
+  [
+    ("iptables -A INPUT -p udp --dport 53 -m limit --limit 5/s --limit-burst 10 -j ACCEPT", "This command is effective in mitigating DDoS attacks, but the limits may need adjustment based on actual traffic patterns."),
+    ("iptables -A INPUT -p udp --dport 53 -j DROP", "This is a strong measure, but it could block legitimate DNS requests if not configured correctly."),
+    ("systemctl restart named", "Restarting the DNS service is necessary, but it may lead to temporary resolution issues for users.")
+  ]
+Netplan agent critiques:
+  [
+    ("sudo ufw enable", "Enabling the firewall is crucial, but it may disrupt existing connections if not planned properly."),
+    ("sudo ufw allow from 192.168.1.0/24", "This is a good practice for local network access, but it may expose the network to risks if the local network is compromised."),
+    ("sudo systemctl restart systemd-networkd", "Restarting the network service is important, but it can cause temporary connectivity issues for users."),
+    ("sudo apt-get update && sudo apt-get upgrade", "Regular updates are essential, but they can sometimes lead to unexpected changes in system behavior.")
+  ]
+
+======Traceback (most recent call last):
+  File "/Users/danielprudky/projects/vut/mad-shield/main.py", line 21, in <module>
+    main()
+  File "/Users/danielprudky/projects/vut/mad-shield/main.py", line 17, in main
+    mad_shield.go("test/alert/sql_injection")
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py", line 23, in go
+    self.mad.debate(alert)
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py", line 61, in debate
+    task = self.workforce.process_tasks(self.load_tasks())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/workforce.py", line 36, in process_tasks
+    asyncio.run(self.start())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/.venv/lib/python3.12/site-packages/camel/societies/workforce/workforce.py", line 471, in start
+    await self._listen_to_channel()
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/workforce.py", line 115, in _listen_to_channel
+    await self._handle_completed_task(returned_task)
+  File "/Users/danielprudky/projects/vut/mad-shield/.venv/lib/python3.12/site-packages/camel/societies/workforce/workforce.py", line 426, in _handle_completed_task
+    await self._post_ready_tasks()
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/workforce.py", line 91, in _post_ready_tasks
+    await self._post_task(ready_task, self)
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/workforce.py", line 47, in _post_task
+    print(f"Posting task to \"{assignee.worker.role_name}\"") #TODO: DAN SMAZAT
+                               ^^^^^^^^^^^^^^^
+AttributeError: 'Workforce' object has no attribute 'worker'
+
+Process finished with exit code 1

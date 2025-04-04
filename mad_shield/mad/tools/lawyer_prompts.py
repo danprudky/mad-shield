@@ -1,4 +1,4 @@
-import textwrap
+from camel.prompts import TextPrompt
 
 
 def init_prompt(component_name: str, component_description: str) -> str:
@@ -6,7 +6,7 @@ def init_prompt(component_name: str, component_description: str) -> str:
     Generates an initial prompt for an agent participating in a multi-agent debate.
 
     This function constructs a structured prompt that defines the role of an agent
-    representing a specific system component in a debate focused on cyber attack protection.
+    representing a specific system component in a debate focused on cyberattack protection.
     The agent is responsible for proposing solutions and evaluating the proposals of others.
 
     Args:
@@ -24,35 +24,38 @@ def init_prompt(component_name: str, component_description: str) -> str:
     - A structured format for providing proposals and critiques.
     - The goal of the debate: finding compromises to protect the system while minimizing conflicts.
     """
-    return textwrap.dedent(
-        "YOUR IDENTITY:"
-        f"I need you to be an agent in a multi-agent debate and represent a {component_name} component with this setup: "
-        f"{component_description}"
-        "Your role in the debate will be to advocate for solutions that will protect your component in the event of a cyber attack."
-        "Your job will have two phases. First will be giving proposals, in form of executable cli commands, that will somehow protect your component. "
-        "This will happen especially in first round and then, in second phase you will criticize the proposals of others, if you will see some better options, "
-        "their proposals will be against you and so on. The goal of the debate will be finding compromises to minimize conflict between proposals and "
-        "in first place protect system in the event of cyber attack."
+    return TextPrompt(
+        "YOUR IDENTITY:\n"
+        f"I need you to be an agent in a multi-agent debate representing the {component_name} component with the following setup: {component_description}\n\n"
+        "Your role is to propose defense strategies for your component in the event of a cyber attack. "
+        "The debate will have two distinct phases:\n"
+        "1. In the first round, provide your proposals as executable CLI commands with brief justifications using propose_tool.\n"
+        "2. Starting from the second round, respond to other agents’ proposals using the react_prompt tool and format it into CRITICIZE FORMAT. "
+        "Every response from you must strictly follow the CRITICIZE FORMAT from round 2 onward.\n\n"
+
+        "Your main objective is to protect your assigned component, but you must also work toward achieving a **balanced, system-wide consensus**"
+        "that enhances overall security. If your proposal is identical to another agent’s, you should confirm agreement or reconsider whether your stance"
+        "is optimal for the system. Being stubborn without just cause may weaken security. Your responses must always be logically justified.\n\n"
         
-        "PROPOSALS FORMAT:"
-        "I'm suggesting these proposals:"
-        "  ["
-        "    (<executable cli command>, <justification>),"
-        "    ..."
-        "  ]"
+        "PROPOSALS FORMAT:\n"
+        f"I'm {component_name}_lawyer and suggesting these proposals:\n"
+        "  [\n"
+        "    (<executable cli command>, <justification>),\n"
+        "    ...\n"
+        "  ]\n\n"
         
-        "CRITICIZE FORMAT:"
-        "I'm approving these proposals:"
-        "<agent> agent suggests:"
-        "  ["
-        "    (<executable cli command>, <justification>) - APPROVED,"
-        "    (<executable cli command>, <justification>) - APPROVED,"
-        "  ]"
-        "I disagree on these proposals:"
-        "<agent> suggests:"
-        "  (<executable cli command>, <justification>),"
-        "  but <reason>, and suggesting alternative:"
-        "  [(<executable cli command>, <justification>), ...]"
+        "CRITICIZE FORMAT:\n"
+        f"I'm {component_name}_lawyer and approving these proposals:\n"
+        "{opponent_agent_name} suggests:\n"
+        "  [\n"
+        "    (<executable cli command>, <justification>) - APPROVED,\n"
+        "    ...\n"
+        "  ]\n"
+        "I disagree on these proposals:\n"
+        "{opponent_agent_name} suggests:\n"
+        "  (<executable cli command>, <justification>),\n"
+        "  because <reason>, and suggesting alternative:\n"
+        "  [ (<executable cli command>, <justification>), ... ]\n"
         "..."
     )
 
@@ -78,13 +81,11 @@ def propose_prompt(attack_alert: str) -> str:
     - Instructions to generate a solution using executable CLI commands.
     - A requirement for brief justifications alongside the proposed commands.
     """
-    return textwrap.dedent(
-        "The threat described by this summary has appeared on the network:"
-        f"{attack_alert}"
-        "Take a look at your component settings, evaluate the vulnerability of your component for yourself and "
-        "design a solution with executable cli command in the simplest possible format:"
-        "[(<executable cli command>, <justification>), ...]"
-        "I don't need to add anything more to the commands, a brief justification is enough."
+    return TextPrompt(
+        "The threat described by this summary has appeared on the network:\n"
+        f"{attack_alert}\n"
+        "Review your component settings, evaluate the vulnerability, and design a solution with executable CLI commands in the "
+        "defined PROPOSALS FORMAT. Don't forget to provide a brief justification for each command."
     )
 
 
@@ -96,20 +97,37 @@ def react_prompt(proposals_summary: str) -> str:
     suggested defensive actions and asks the agent to review, approve, or suggest modifications.
 
     Args:
-        proposals_summary (str): A summary of proposals from other agents regarding
-                                 the incoming cyber threat.
+        proposals_summary (str): The summarized proposals from the previous round, generated by the summarizer agent as
+                                 result of task '{debate_round}.2'.
+                                 This summary contains the collective defense strategies debated so far.
 
     Returns:
-        str: A formatted prompt instructing the agent to evaluate the proposals,
-             either approving them or suggesting improvements.
+        str: A formatted prompt instructing the agent to evaluate the proposals, either approving them
+             or suggesting improvements while prioritizing both its component’s security needs and
+             the overall system's integrity.
 
-    The prompt includes:
-    - A summary of the proposed actions.
-    - A request for the agent to review and provide feedback.
-    - Instructions to either approve the commands or suggest modifications.
+    Instructions for the agent:
+    - Review the provided summary carefully.
+    - If another agent disagrees with your previous proposal, assess their reasoning and modify your command if justified.
+    - If you disagree with another agent’s proposal or believe it is unfair to your component, suggest an alternative or
+      explain why it should not be used.
+    - If a proposal aligns with your own, you must either approve it or acknowledge that your initial stance might not be optimal
+      and adjust accordingly.
+    - Ignore fully approved commands and focus only on those still under discussion.
+    - Always act in the best interest of your component, but prioritize achieving consensus for the greater security of the system.
+
+    The agent must respond in CRITICIZE FORMAT.
     """
-    return textwrap.dedent(
-        "Here is a summary of agents' suggestions for incoming alert:"
-        f"{proposals_summary}"
-        "If you disagree with something or have suggestions for improvement, edit the individual commands, otherwise write that you agree with the command."
+    return TextPrompt(
+        "Here is a summary of lawyer agents' suggestions for the incoming alert:\n"
+        f"{proposals_summary}\n\n"
+        "Please review the proposals carefully. If any agent disagrees with your proposal, try to refine it based on their justification "
+        "and suggested alternative, if provided. If you disagree with another agent's proposal or believe it is unfair to your component, "
+        "suggest an alternative command or explain why it should not be used. If you agree with a proposal, simply state your approval.\n\n"
+        "If you and another agent have identical proposals, you must either confirm agreement or reconsider your stance for the benefit "
+        "of the overall system.\n\n"
+        "You can ignore commands that have already been fully approved by all agents. Focus only on those still under discussion—either confirm "
+        "your agreement or continue the debate if you have objections.\n\n"
+        "Remember, while your primary duty is to defend the interests of your component, achieving a system-wide consensus is the ultimate goal.\n\n"
+        "Respond in CRITICIZE FORMAT."
     )

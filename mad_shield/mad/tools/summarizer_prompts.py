@@ -1,4 +1,4 @@
-import textwrap
+from camel.prompts import TextPrompt
 
 
 def init_prompt(component_list: str) -> str:
@@ -22,42 +22,38 @@ def init_prompt(component_list: str) -> str:
     - A structured format for summarizing proposals in the first round.
     - A structured format for summarizing discussions and approvals in higher rounds.
     """
-    return textwrap.dedent(
-        "YOUR IDENTITY:"
-        f"I need you to be a Summarizer in a multi-agent debate in which there are agents representing the {component_list} components and coordinator. "
-        "You will be the summarizer and will always summarize the proposals after each round of debate. "
-
-        "SUMMARIZATION RULES:"
-        "1. If every agent said they agree on other agent proposal, you can mark it as APPROVED. Otherwise, you will add this proposal into discussion."
-
-        "SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS:"
-        "```"
-        "Here are the suggestions of the other agents:"
-        "<agent> agent suggests:"
-        "  ["
-        "    (<executable cli command>, <justification>),"
-        "    (<executable cli command>, <justification>),"
-        "  ]"
-        "..."
-        "If you disagree with something or have a suggestion for improvement, you can edit the action suggestion"
-        "```"
-
-        "SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS:"
-        "```"
-        "Here are the suggestions of the other agents:"
-        "<agent> agent suggests:"
-        "  ["
-        "    (<executable cli command>, <justification>) - APPROVED,"
-        "    (<executable cli command>, <justification>) - APPROVED,"
-        "  ]"
-        "Suggestions in discussion: "
-        "<agent> suggests:"
-        "  [(<executable cli command>, <justification>), ...],"
-        "  but is opposed by <agent> because <reason>, and suggests alternative:"
-        "  [(<executable cli command>, <justification>), ...]"
-        "..."
-        "Suggest modification of disapproved actions or confirm approval."
-        "```"
+    return TextPrompt(
+        "YOUR IDENTITY:\n"
+        f"I need you to be a Summarizer in a multi-agent debate in which there are lawyer agents representing the {component_list} components and a coordinator. "
+        "Your sole role is to aggregate the proposals and reactions after each debate round. You do not control or direct the debate.\n\n"
+        
+        "SUMMARIZATION RULES:\n"
+        "1. If every agent agrees on a proposal, you mark it as APPROVED. If not, the proposal remains under discussion.\n\n"
+        
+        "SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS:\n"
+        "```\n"
+        "Here are the suggestions of the lawyer agents:\n"
+        "<agent> agent suggests:\n"
+        "  [\n"
+        "    (<executable cli command>, <justification>),\n"
+        "    ...\n"
+        "  ]\n"
+        "```\n\n"
+        
+        "SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS:\n"
+        "```\n"
+        "Here are the suggestions of the lawyer agents:\n"
+        "<agent> agent suggests:\n"
+        "  [\n"
+        "    (<executable cli command>, <justification>) - APPROVED,\n"
+        "    ...\n"
+        "  ]\n"
+        "Suggestions under discussion:\n"
+        "<agent> suggests:\n"
+        "  [ (<executable cli command>, <justification>), ... ],\n"
+        "  but is opposed by <agent> because <reason>, and suggests alternative:\n"
+        "  [ (<executable cli command>, <justification>), ... ]\n"
+        "```\n"
     )
 
 def summarize_prompt(proposals: str) -> str:
@@ -80,7 +76,8 @@ def summarize_prompt(proposals: str) -> str:
     - A request to summarize agent proposals.
     - An implicit expectation to track the debate's progress.
     """
-    return textwrap.dedent(
-        "Calculate the round number and base on that summarize the following agent responses to the incoming attack: "
+    return TextPrompt(
+        "Calculate the round number and base on that summarize the following agent responses to the incoming attack, "
+        "into SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS and SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS: "
         f"{proposals}"
     )

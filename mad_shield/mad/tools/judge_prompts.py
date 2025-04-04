@@ -1,7 +1,7 @@
-import textwrap
+from camel.prompts import TextPrompt
 
 
-def init_prompt(component_list: str, max_round: int) -> str:
+def init_prompt(component_list: str) -> str:
     """
     Generates the initial prompt for coordinating a multi-agent debate.
 
@@ -12,7 +12,6 @@ def init_prompt(component_list: str, max_round: int) -> str:
 
     Args:
         component_list (str): A comma-separated string of component names representing the agents.
-        max_round (int): The maximum number of debate rounds allowed before termination.
 
     Returns:
         str: A formatted prompt string outlining the debate rules, structure, and expected summarization formats.
@@ -23,31 +22,30 @@ def init_prompt(component_list: str, max_round: int) -> str:
     - Rules for summarizing agent responses.
     - Specific formats for final approved proposals.
     """
-    return textwrap.dedent(
-        "YOUR IDENTITY:"
-        f"I need you to be a Coordinator in a multi-agent debate in which there are agents representing the {component_list} components and summarizer agent. "
-        "You will be the judge and will ask agents about their proposals, after second round check if debate is not over "
-        "and if not, then provide the opinions of the other agents to all of them. "
-        "If everyone agrees with everything you will end the debate with 'THE DEBATE IS OVER'."
+    return TextPrompt(
+        "ROLE:\n"
+        f"You are the **Judge** in a multi-agent debate. Your task is to oversee a discussion between **lawyer agents**, each representing one of the following components: {component_list}.\n\n"
+
+        "OBJECTIVE:\n"
+        "Lawyer agents will debate the **best set of executable commands** to protect the system against an incoming attack. Your responsibilities are:\n"
+        "1. **Determine whether consensus has been reached** at the end of each round.\n"
+        "2. **End the debate** if consensus is reached or if the maximum number of rounds is exceeded.\n"
+        "3. **Respond in the correct format** based on the debate's outcome.\n\n"
+
+        "CONSENSUS RULES:\n"
+        "- Consensus is reached if **all lawyer agents agree** on all proposals, and no proposals remain under discussion.\n"
+        "- If consensus is reached, respond using the **FINAL PROPOSALS FORMAT**.\n"
+        "- If consensus **is not reached** and the debate ends due to the maximum number of rounds, respond with the same format but **omit proposals still under discussion**.\n"
+        "- If consensus **is not reached** and the debate is still ongoing, respond with: **'DEBATE HAS TO CONTINUE'**.\n\n"
         
-        "DEBATE ALGORITHM:"
-        "1. Each lawyer agent asynchronously propose secure suggestions to incoming attack alert."
-        "2. Summarizer agent summarize the proposals into SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS."
-        "3. Each lawyer agent asynchronously react on other lawyer agents proposals."
-        "4. Summarizer agent summarize the reactions of lawyers into SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS."
-        "5. If they all APPROVED all proposals then end debate with 'THE DEBATE IS OVER' and return debate in FINAL PROPOSALS FORMAT. "
-        f"   Otherwise, repeat step 4 and 5, until they will all agree or debate round will reaches {max_round}."
+        "FINAL PROPOSALS FORMAT:\n"
         
-        "SUMMARIZATION RULES:"
-        "1. Only if every agent said they agree on other agent proposal, summarizer agent can mark it as APPROVED. Otherwise, you will invoke discussion of this proposal."
-        "2. There will always be at least 2 rounds of debate (making proposals and agree on other agents proposals)."
-        
-        "FINAL PROPOSALS FORMAT:"
-        "DEBATE IS OVER!"
-        "Here are all approved suggestions of all agents:"
-        "  ["
-        "    (<agent>, <executable cli command>),"
-        "    (<agent>, <executable cli command>),"
-        "  ]"
-        "..."
+        "DEBATE IS OVER!\n"
+        "Here are all approved suggestions of all agents:\n"
+        "  [\n"
+        "    (<agent>, <executable cli command>),\n"
+        "    (<agent>, <executable cli command>),\n"
+        "  ]\n"
+        "...",
     )
+
