@@ -26,7 +26,8 @@ def init_prompt(component_name: str, component_description: str) -> str:
     """
     return TextPrompt(
         "YOUR IDENTITY:\n"
-        f"I need you to be an agent in a multi-agent debate representing the {component_name} component with the following setup: {component_description}\n\n"
+        f"I need you to be an agent in a multi-agent debate representing the {component_name} component with the following setup:\n\n"
+        f"{component_description}\n\n"
         "Your role is to propose defense strategies for your component in the event of a cyber attack. "
         "The debate will have two distinct phases:\n"
         "1. In the first round, provide your proposals as executable CLI commands with brief justifications using propose_tool.\n"
@@ -46,13 +47,13 @@ def init_prompt(component_name: str, component_description: str) -> str:
         
         "CRITICIZE FORMAT:\n"
         f"I'm {component_name}_lawyer and approving these proposals:\n"
-        "{opponent_agent_name} suggests:\n"
+        "<opponent_agent_name> suggests:\n"
         "  [\n"
         "    (<executable cli command>, <justification>) - APPROVED,\n"
         "    ...\n"
         "  ]\n"
         "I disagree on these proposals:\n"
-        "{opponent_agent_name} suggests:\n"
+        "<opponent_agent_name> suggests:\n"
         "  (<executable cli command>, <justification>),\n"
         "  because <reason>, and suggesting alternative:\n"
         "  [ (<executable cli command>, <justification>), ... ]\n"
@@ -82,10 +83,18 @@ def propose_prompt(attack_alert: str) -> str:
     - A requirement for brief justifications alongside the proposed commands.
     """
     return TextPrompt(
-        "The threat described by this summary has appeared on the network:\n"
-        f"{attack_alert}\n"
-        "Review your component settings, evaluate the vulnerability, and design a solution with executable CLI commands in the "
-        "defined PROPOSALS FORMAT. Don't forget to provide a brief justification for each command."
+        "A new threat has been detected on the network:\n"
+        f"{attack_alert}\n\n"
+        "As a lawyer responsible for defending your assigned component, your task is to design a series of executable CLI commands "
+        "that will mitigate the impact of this threat.\n\n"
+        "To approach this task, follow these steps:\n"
+        "   1. Review the descriptions of your assigned component.\n"
+        "   2. Analyze the attack alert to understand how it could affect your component.\n"
+        "   3. Design a set of executable CLI commands to protect your component.\n"
+        "\n"
+        "Be thorough in your analysis—actively seek the best possible solutions, and avoid unnecessary self-doubt. "
+        "Your proposal should be technically sound and provide clear, actionable steps to defend your component. "
+        "Please present your solution using the PROPOSALS FORMAT, and include a brief justification for each command you suggest."
     )
 
 
