@@ -16,11 +16,10 @@ class MadShield:
         ]
         self.mad = MultiAgentDebate(self.components, max_debate_rounds)
         self.mad.load_agents()
-        self.mad.load_workforce()
 
-    def go(self, alert_path: str) -> None:
+    async def go(self, alert_path: str) -> None:
         alert = load_alert(alert_path)
-        commands = self.mad.debate(alert)
+        commands = await self.mad.debate(alert)
 
         for command in commands:
            command.component.execute(command.command)

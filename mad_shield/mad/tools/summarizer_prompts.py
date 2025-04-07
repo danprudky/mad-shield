@@ -56,28 +56,24 @@ def init_prompt(component_list: str) -> str:
         "```\n"
     )
 
-def summarize_prompt(proposals: str) -> str:
+def summarize_prompt(proposals: str, debate_round: int) -> str:
     """
-    Generates a prompt for summarizing agent responses in a multi-agent debate.
+    Generates an optimized prompt for summarizing agent responses in a multi-agent debate.
 
     This function constructs a prompt that instructs a summarizer agent
-    to analyze and summarize the current state of the debate based on the received proposals.
-    The summarizer should determine the current debate round and extract key insights.
+    to analyze and summarize the current state of the debate efficiently.
 
     Args:
         proposals (str): A string containing the agent proposals from the current round.
+        debate_round (int): The debate round to summarize.
 
     Returns:
-        str: A formatted prompt instructing how to summarize the proposals
-             and extract relevant insights for the next debate round.
-
-    The prompt includes:
-    - Instructions to determine the current debate round.
-    - A request to summarize agent proposals.
-    - An implicit expectation to track the debate's progress.
+        str: A formatted prompt instructing the summarizer to extract key insights concisely.
     """
     return TextPrompt(
-        "Calculate the round number and base on that summarize the following agent responses to the incoming attack, "
-        "into SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS and SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS: "
-        f"{proposals}"
+        "Summarize the following agent responses efficiently. "
+        f"Now it's {debate_round} round. for the first round, use 'FIRST ROUND FORMAT'. "
+        "For subsequent rounds, use 'HIGHER ROUND FORMAT'. "
+        "Focus on key actions and justifications, avoiding unnecessary details.\n\n"
+        f"Proposals:\n{proposals}"
     )

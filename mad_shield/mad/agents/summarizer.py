@@ -1,5 +1,5 @@
 from camel.toolkits import FunctionTool
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Tuple
 
 from .debate import DebateAgent
 
@@ -10,11 +10,12 @@ if TYPE_CHECKING:
 
 class SummarizerAgent(DebateAgent):
     def __init__(self, mad: "MultiAgentDebate") -> None:
-        agent_tools = [
-            FunctionTool(summarize_prompt),
-        ]
-
-        super().__init__(mad, "summarizer", tools=agent_tools)
+        super().__init__(mad, "summarizer")
 
     def get_init_msg(self) -> str:
         return init_prompt(self.mad.get_components_in_str())
+
+    async def summarize(self, proposals: List[Tuple[str, str]], debate_round: int) -> str:
+        prompt = summarize_prompt(str(proposals), debate_round)
+        response = self.step(prompt)
+        return response.msgs[0].content
