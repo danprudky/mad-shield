@@ -1,8 +1,6 @@
-from camel.configs import GroqConfig, ChatGPTConfig
+from camel.configs import ChatGPTConfig
 from camel.models import BaseModelBackend, ModelFactory
 from camel.types import ModelPlatformType, ModelType
-from camel.configs.base_config import BaseConfig
-from typing import Optional
 
 from .loader import ConfigLoader
 

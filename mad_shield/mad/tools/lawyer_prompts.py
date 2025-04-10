@@ -7,18 +7,15 @@ def init_prompt(component_name: str, component_description: str) -> str:
         f"You are the **lawyer agent** representing the **{component_name}** component.\n\n"
         "COMPONENT SETUP:\n"
         f"{component_description}\n\n"
-
         "MISSION:\n"
         "1. Propose CLI-based defense strategies for your component in the event of a cyberattack.\n"
         "2. Participate in a debate with other lawyer agents to reach a consensus that ensures total system defense.\n\n"
-
         "STRUCTURE OF DEBATE:\n"
         "**Phase 1**: Propose CLI commands (with justification) to defend your component.\n"
         "**Phase 2+**: Review others’ proposals. You may:\n"
         "   - Approve (if not yours)\n"
         "   - Criticize (and offer alternatives)\n"
         "   - Update your own if justified by critique\n\n"
-
         "RULES:\n"
         "Do NOT approve or evaluate your own proposals.\n"
         "Strive for consensus — do not be stubborn without strong justification.\n"
@@ -30,23 +27,19 @@ def propose_prompt(attack_alert: str, component_name: str) -> str:
     return TextPrompt(
         "THREAT ALERT:\n"
         f"{attack_alert}\n\n"
-
         "YOUR TASK:\n"
         f"As the lawyer of the **{component_name}** component, create a defense plan against the above threat.\n"
         "Design **CLI commands** that can be executed to protect your component.\n\n"
-
         "HOW TO PROCEED:\n"
         "1. Understand how this threat affects your component.\n"
         "2. Design CLI commands that mitigate the risk.\n"
         "3. Include a short justification for each command.\n\n"
-
         "RESPONSE FORMAT:\n"
         f"I'm {component_name}_lawyer and suggesting these proposals:\n"
         "   [\n"
         "       (<executable cli command>, <justification>),\n"
         "       ...\n"
         "   ]\n\n"
-
         "Be specific, technical, and practical. You are the defender of your component, but your proposal must be "
         "compatible with the overall system security.\n"
     )
@@ -56,19 +49,15 @@ def react_prompt(proposals_summary: str, component_name: str) -> str:
     return TextPrompt(
         "SUMMARY OF PROPOSALS:\n"
         f"{proposals_summary}\n\n"
-
         "INSTRUCTIONS:\n"
         f"You are the **{component_name}_lawyer**. Respond to proposals from other agents.\n"
-
         "RULES:\n"
         "Do NOT approve or comment on your own proposals.\n"
         "Focus only on commands still under discussion.\n\n"
-
         "HOW TO RESPOND:\n"
         "1. APPROVING: List other agents' commands you support.\n"
         "2. DISAGREE: If a command is bad for your component, explain why and suggest better alternatives.\n"
         "3. If your original proposal was criticized, reflect and consider updating it in the next round.\n\n"
-
         "RESPONSE FORMAT:\n"
         f"I'm {component_name}_lawyer:\n"
         "APPROVING:\n"
@@ -85,23 +74,20 @@ def react_prompt(proposals_summary: str, component_name: str) -> str:
         "   ]"
     )
 
+
 def react_correct_prompt(proposals_summary: str, component_name: str) -> str:
     return TextPrompt(
         "SUMMARY OF PROPOSALS:\n"
         f"{proposals_summary}\n\n"
-
         "INSTRUCTIONS:\n"
         f"You are the **{component_name}_lawyer**. Your job is to respond to proposals made by other agents.\n\n"
-
         "RULES:\n"
         "1. Do NOT evaluate or approve your own proposals.\n"
         "2. Maintain a list of commands fully approved by all agents in **MY APPROVED** — do not debate these again.\n"
         "3. If another agent critiques your previous proposal, revise it under **MY UPDATED**.\n"
         "4. If you agree with an unapproved command from another agent, list it under **APPROVING**.\n"
         "5. If you disagree with another agent’s unapproved command, explain why and suggest an alternative under **DISAGREE**.\n\n"
-
         "GOAL: Achieve system-wide consensus that balances all components' needs.\n\n"
-
         "RESPONSE FORMAT:\n"
         f"I'm {component_name}_lawyer:\n"
         "MY APPROVED:\n"
@@ -132,5 +118,3 @@ def react_correct_prompt(proposals_summary: str, component_name: str) -> str:
         "       ...\n"
         "   ]\n"
     )
-
-

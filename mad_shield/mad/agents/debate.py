@@ -3,17 +3,18 @@ from camel.agents import ChatAgent
 from camel.messages import BaseMessage
 
 from ...configers import ModelLoader
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from mad_shield.mad.mad import MultiAgentDebate
+    from camel.models import BaseModelBackend
 
 
-class DebateAgent(ChatAgent):  # type: ignore
-    def __init__(self, mad: "MultiAgentDebate", role: str, **kwargs) -> None:
+class DebateAgent(ChatAgent):
+    def __init__(self, mad: "MultiAgentDebate", role: str, **kwargs: Any) -> None:
 
-        self.mad = mad
-        self.model = ModelLoader().gpt_4o_mini()
+        self.mad: "MultiAgentDebate" = mad
+        self.model: "BaseModelBackend" = ModelLoader().gpt_4o_mini()
 
         self.role: str = role
 
@@ -26,3 +27,7 @@ class DebateAgent(ChatAgent):  # type: ignore
     @abstractmethod
     def get_init_msg(self) -> str:
         pass
+
+    def sent_prompt(self, prompt: str) -> str:
+        response = self.step(prompt)
+        return response.msgs[0].content

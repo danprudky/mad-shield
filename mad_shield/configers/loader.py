@@ -1,5 +1,5 @@
 import os
-import yaml
+import yaml  # type: ignore
 from dotenv import load_dotenv
 
 

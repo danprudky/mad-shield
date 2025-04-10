@@ -15,11 +15,10 @@ class MadShield:
             for component in AgentLoader(agent_config_path).load().items()
         ]
         self.mad = MultiAgentDebate(self.components, max_debate_rounds)
-        self.mad.load_agents()
 
-    async def go(self, alert_path: str) -> None:
+    async def defend(self, alert_path: str) -> None:
         alert = load_alert(alert_path)
         commands = await self.mad.debate(alert)
 
         for command in commands:
-           command.component.execute(command.command)
+            command.component.execute(command.command)

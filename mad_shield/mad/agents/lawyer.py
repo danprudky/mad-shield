@@ -1,4 +1,4 @@
-from camel.toolkits import FunctionTool
+from enum import Enum
 
 from mad_shield.mad.agents.debate import DebateAgent
 
@@ -11,6 +11,12 @@ if TYPE_CHECKING:
     from mad_shield.mad import MultiAgentDebate
 
 
+class LawyerAction(Enum):
+    PROPOSE = "propose"
+    CRITICIZE = "criticize"
+    CORRECT = "correction"
+
+
 class LawyerAgent(DebateAgent):
     def __init__(self, component: "ComponentAgent", mad: "MultiAgentDebate") -> None:
         self.component = component
@@ -20,17 +26,22 @@ class LawyerAgent(DebateAgent):
     def get_init_msg(self) -> str:
         return init_prompt(self.component.name, self.component.description)
 
-    def propose(self, alert: str) -> Tuple[str, str]:
-        prompt = propose_prompt(alert, self.component.name)
-        response = self.step(prompt)
-        return self.role, response.msgs[0].content
+    def act(self, action: LawyerAction, additional_info: str) -> Tuple[str, str]:
+        prompt = self._select_prompt(action, additional_info)
+        return self.role, self.sent_prompt(prompt)
 
-    def criticize(self, proposal_summary: str) -> Tuple[str, str]:
-        prompt = react_prompt(proposal_summary, self.component.name)
-        response = self.step(prompt)
-        return self.role, response.msgs[0].content
-
-    def criticize_with_self_correction(self, proposal_summary: str) -> Tuple[str, str]:
-        prompt = react_correct_prompt(proposal_summary, self.component.name)
-        response = self.step(prompt)
-        return self.role, response.msgs[0].content
+    def _select_prompt(self, action: LawyerAction, additional_info: str) -> str:
+        if action == LawyerAction.PROPOSE:
+            return propose_prompt(
+                attack_alert=additional_info, component_name=self.component.name
+            )
+        elif action == LawyerAction.CRITICIZE:
+            return react_prompt(
+                proposals_summary=additional_info, component_name=self.component.name
+            )
+        elif action == LawyerAction.CORRECT:
+            return react_correct_prompt(
+                proposals_summary=additional_info, component_name=self.component.name
+            )
+        else:
+            raise ValueError(f"Unknown action: {action}")
