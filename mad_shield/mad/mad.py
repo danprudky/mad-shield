@@ -1,4 +1,3 @@
-import logging
 import time
 import ast
 
@@ -6,13 +5,10 @@ from typing import List, Tuple
 from typing import TYPE_CHECKING
 
 from .agents import *
-from .agents.summarizer import SummarizerAgent
 from ..command import Command
 
 if TYPE_CHECKING:
     from mad_shield.agents.componentAgent import ComponentAgent
-
-logger = logging.getLogger("debate")
 
 class MultiAgentDebate:
     def __init__(self, components: List["ComponentAgent"], max_rounds: int = 5) -> None:
@@ -28,7 +24,6 @@ class MultiAgentDebate:
         for component in self.components:
             self.lawyers.append(component.hire_lawyer(self))
 
-        self.summarizer = SummarizerAgent(self)
         self.judge = JudgeAgent(self)
 
     def get_components_in_str(self) -> str:
@@ -49,10 +44,6 @@ class MultiAgentDebate:
         print(f"\nProposals ready in: {time.time() - start} seconds")
         print(f"{debate_round} round proposals:\n" + proposals)
 
-        #summarized = await self.summarizer.summarize(proposals, debate_round)
-        #print(f"\nFirst round summary ready in: {time.time() - start} seconds")
-        #print(f"{debate_round} round summary:\n" + summarized)
-
         debate_round += 1
         while not is_consensus and debate_round <= self.max_rounds:
 
@@ -63,10 +54,6 @@ class MultiAgentDebate:
             proposals = self.prepare_proposals(proposals)
             print(f"\nReacts ready in: {time.time() - start} seconds")
             print(f"{debate_round} round proposals:\n" + str(proposals))
-
-            #summarized = await self.summarizer.summarize(proposals, debate_round)
-            #print(f"\n{debate_round}. round summary ready in: {time.time() - start} seconds")
-            #print(f"{debate_round} round summary:\n" + summarized)
 
             if debate_round <= 1:
                 debate_round += 1
