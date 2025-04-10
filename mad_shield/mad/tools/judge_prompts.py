@@ -4,73 +4,58 @@ from camel.prompts import TextPrompt
 
 
 def init_prompt(component_list: str) -> str:
-    """
-    Generates the initial prompt for coordinating a multi-agent debate.
-
-    This function constructs a structured prompt that defines the role of a judge
-    in a debate involving multiple agents, each representing different components.
-    The judge coordinates the debate by gathering proposals, summarizing them,
-    collecting opinions, and determining consensus among the agents.
-
-    Args:
-        component_list (str): A comma-separated string of component names representing the agents.
-
-    Returns:
-        str: A formatted prompt string outlining the debate rules, structure, and expected summarization formats.
-
-    The prompt includes:
-    - The judge's identity as the debate coordinator.
-    - A step-by-step debate algorithm detailing how proposals and opinions are processed.
-    - Rules for summarizing agent responses.
-    - Specific formats for final approved proposals.
-    """
     return TextPrompt(
         "ROLE:\n"
-        f"You are the **Judge** in a multi-agent debate. Your task is to oversee a discussion between **lawyer agents**, each representing one of the following components: {component_list}.\n\n"
+        f"You are the **Judge** in a multi-agent debate between the following lawyer agents: {component_list}.\n\n"
 
         "OBJECTIVE:\n"
-        "Lawyer agents will debate the **best set of executable commands** to protect the system against an incoming attack. Your responsibilities are:\n"
-        "1. **Determine whether consensus has been reached** at the end of each round.\n"
-        "2. **End the debate** if consensus is reached or if the maximum number of rounds is exceeded.\n"
-        "3. **Respond in the correct format** based on the debate's outcome.\n\n"
+        "Lawyer agents are collaborating to determine the most effective **CLI commands** to defend the system.\n"
+        "You coordinate the debate and track progress toward consensus.\n\n"
+
+        "YOUR RESPONSIBILITIES:\n"
+        "1. Determine whether full **consensus** has been reached.\n"
+        "2. End the debate if consensus is reached or the maximum number of rounds is completed.\n"
+        "3. Respond with the correct format based on debate status.\n\n"
 
         "CONSENSUS RULES:\n"
-        "- Consensus is reached if **all lawyer agents agree** on all proposals, and no proposals remain under discussion.\n"
-        "- If consensus is reached, respond using the **FINAL PROPOSALS FORMAT**.\n"
-        "- If consensus **is not reached** and the debate ends due to the maximum number of rounds, respond with the same format but **omit proposals still under discussion**.\n"
-        "- If consensus **is not reached** and the debate is still ongoing, respond with: **'DEBATE HAS TO CONTINUE'**.\n\n"
-        "- If any agents propose same command, you can merge it as 'More agents'"
+        "- Consensus is reached when **all lawyer agents approve all proposed commands**.\n"
+        "- If multiple agents independently propose the same command, merge them as: 'More agents'.\n"
+        "- Do NOT include commands still being discussed or without full approval.\n\n"
     )
 
 def judge_debate_prompt(proposal_summary: str, is_last_round: bool):
 
     if is_last_round:
         return TextPrompt(
-            "Pick all **APPROVED ONLY** proposals and based on defined CONSENSUS RULES and end the debate.\n"
+            "Final round reached. Apply CONSENSUS RULES.\n"
+            "Select only the proposals **approved by all agents**.\n"
+            "Omit anything still under discussion.\n\n"
             "RESPONSE FORMAT:\n"
             + get_response_format() +
-            "Here are proposals:"
+            "\nPROPOSALS:\n"
             f"{proposal_summary}"
         )
     else:
         return TextPrompt(
-            "Follow these steps:"
-            "1. Based on round proposals evaluate whether all agents have approved all of them."
-            "2. If **NOT** all agents have approved all of them, respond with: **DEBATE HAS TO CONTINUE**."
-            "3. If they approved all of proposals based on defined CONSENSUS RULES, pick all proposals and end the debate."
+            "Review current round proposals.\n"
+            "1. Check if **all agents approved all commands**.\n"
+            "2. If yes, debate is over. Respond with FINAL PROPOSALS FORMAT.\n"
+            "3. If not, respond with: **DEBATE HAS TO CONTINUE**.\n\n"
             "RESPONSE FORMAT:\n"
             + get_response_format() +
-            "Here are proposals:"
+            "\nPROPOSALS:\n"
             f"{proposal_summary}"
         )
 
-def get_response_format():
+
+
+def get_response_format() -> str:
     return textwrap.dedent(
-    "   DEBATE IS OVER!\n"
-    "   Here are all approved suggestions of all agents:\n"
-    "   [\n"
-    "       (<agent>, <executable cli command>),\n"
-    "       (<agent>, <executable cli command>),\n"
-    "       ...\n"
-    "   ]\n"
+        "   DEBATE IS OVER!\n"
+        "   Here are all fully approved commands by all agents:\n"
+        "   [\n"
+        "       (<agent>, <cli command>),\n"
+        "       (<agent>, <cli command>),\n"
+        "       ...\n"
+        "   ]\n"
     )
