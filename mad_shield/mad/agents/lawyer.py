@@ -21,11 +21,16 @@ class LawyerAgent(DebateAgent):
         return init_prompt(self.component.name, self.component.description)
 
     def propose(self, alert: str) -> Tuple[str, str]:
-        prompt = propose_prompt(alert)
+        prompt = propose_prompt(alert, self.component.name)
         response = self.step(prompt)
         return self.role, response.msgs[0].content
 
     def criticize(self, proposal_summary: str) -> Tuple[str, str]:
-        prompt = react_prompt(proposal_summary)
+        prompt = react_prompt(proposal_summary, self.component.name)
+        response = self.step(prompt)
+        return self.role, response.msgs[0].content
+
+    def criticize_with_self_correction(self, proposal_summary: str) -> Tuple[str, str]:
+        prompt = react_correct_prompt(proposal_summary, self.component.name)
         response = self.step(prompt)
         return self.role, response.msgs[0].content

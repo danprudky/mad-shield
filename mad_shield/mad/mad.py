@@ -2,10 +2,8 @@ import logging
 import time
 import ast
 
-from typing import List
+from typing import List, Tuple
 from typing import TYPE_CHECKING
-
-from camel.tasks.task import Task
 
 from .agents import *
 from .agents.summarizer import SummarizerAgent
@@ -41,43 +39,56 @@ class MultiAgentDebate:
 
         debate_round = 1
         is_consensus = False
+        round_result = "Not ready"
 
         print("Max rounds: " + str(self.max_rounds))
 
         proposals = await self.judge.get_proposals(alert)
-        print(f"\nProposals ready in: {time.time() - start} seconds")
-        logger.info(f"{debate_round} round proposals:\n" + str(proposals))
+        proposals = self.prepare_proposals(proposals)
 
-        summarized = await self.summarizer.summarize(proposals, debate_round)
-        print(f"\nFirst round summary ready in: {time.time() - start} seconds")
-        logger.info(f"{debate_round} round summary:\n" + summarized)
+        print(f"\nProposals ready in: {time.time() - start} seconds")
+        print(f"{debate_round} round proposals:\n" + proposals)
+
+        #summarized = await self.summarizer.summarize(proposals, debate_round)
+        #print(f"\nFirst round summary ready in: {time.time() - start} seconds")
+        #print(f"{debate_round} round summary:\n" + summarized)
 
         debate_round += 1
         while not is_consensus and debate_round <= self.max_rounds:
 
-            reacts = await self.judge.get_reacts(summarized)
+            if debate_round == 2:
+                proposals = await self.judge.get_reacts(proposals)
+            else:
+                proposals = await self.judge.get_reacts_and_corrections(proposals)
+            proposals = self.prepare_proposals(proposals)
             print(f"\nReacts ready in: {time.time() - start} seconds")
-            logger.info(f"{debate_round} round proposals:\n" + str(reacts))
+            print(f"{debate_round} round proposals:\n" + str(proposals))
 
-            summarized = await self.summarizer.summarize(reacts, debate_round)
-            print(f"\n{debate_round}. round summary ready in: {time.time() - start} seconds")
-            logger.info(f"{debate_round} round summary:\n" + summarized)
-
+            #summarized = await self.summarizer.summarize(proposals, debate_round)
+            #print(f"\n{debate_round}. round summary ready in: {time.time() - start} seconds")
+            #print(f"{debate_round} round summary:\n" + summarized)
 
             if debate_round <= 1:
                 debate_round += 1
                 continue
 
-            round_result = self.judge.judge_debate(summarized)
+            round_result: str = self.judge.judge_debate(proposals, debate_round == self.max_rounds)
             print(f"\nJudge result ready in: {time.time() - start} seconds")
-            logger.info(f"{debate_round} round judge result:\n" + round_result)
+            print(f"{debate_round} round judge result:\n" + round_result)
 
             is_consensus = True if "OVER" in round_result else False
 
             debate_round += 1
 
-        print(f"\n;Debating tasks: {time.time() - start} seconds")
-        exit(43)
+        print(f"\nDebating tasks: {time.time() - start} seconds")
+        return self.parse_debate_result(round_result)
+
+    @staticmethod
+    def prepare_proposals(proposals: List[Tuple[str, str]]) -> str:
+        result = ""
+        for agent, proposal in proposals:
+            result += proposal + "\n\n"
+        return result
 
     def parse_debate_result(self, debate_result: str) -> list[Command]:
         """

@@ -14,7 +14,7 @@ def main() -> None:
         force=True
     )
 
-    mad_shield = MadShield("mad_shield/config/agents.yaml", 3)
+    mad_shield = MadShield("mad_shield/config/agents.yaml", 4)
 
     asyncio.run(mad_shield.go("test/alert/sql_injection"))
 

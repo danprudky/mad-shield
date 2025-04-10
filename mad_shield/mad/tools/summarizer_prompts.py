@@ -1,3 +1,5 @@
+import textwrap
+
 from camel.prompts import TextPrompt
 
 
@@ -29,34 +31,9 @@ def init_prompt(component_list: str) -> str:
         
         "SUMMARIZATION RULES:\n"
         "1. If every agent agrees on a proposal, you mark it as APPROVED. If not, the proposal remains under discussion.\n\n"
-        
-        "SUMMARIZATION FORMAT FOR FIRST ROUND PROPOSALS:\n"
-        "```\n"
-        "Here are the suggestions of the lawyer agents:\n"
-        "<agent> agent suggests:\n"
-        "  [\n"
-        "    (<executable cli command>, <justification>),\n"
-        "    ...\n"
-        "  ]\n"
-        "```\n\n"
-        
-        "SUMMARIZATION FORMAT FOR HIGHER ROUND PROPOSALS:\n"
-        "```\n"
-        "Here are the suggestions of the lawyer agents:\n"
-        "<agent> agent suggests:\n"
-        "  [\n"
-        "    (<executable cli command>, <justification>) - APPROVED,\n"
-        "    ...\n"
-        "  ]\n"
-        "Suggestions under discussion:\n"
-        "<agent> suggests:\n"
-        "  [ (<executable cli command>, <justification>), ... ],\n"
-        "  but is opposed by <agent> because <reason>, and suggests alternative:\n"
-        "  [ (<executable cli command>, <justification>), ... ]\n"
-        "```\n"
     )
 
-def summarize_prompt(proposals: str, debate_round: int) -> str:
+def summarize_prompt(proposals: str, is_first_round: bool) -> str:
     """
     Generates an optimized prompt for summarizing agent responses in a multi-agent debate.
 
@@ -65,15 +42,40 @@ def summarize_prompt(proposals: str, debate_round: int) -> str:
 
     Args:
         proposals (str): A string containing the agent proposals from the current round.
-        debate_round (int): The debate round to summarize.
+        is_first_round (bool): Whether the current round is the first round.
 
     Returns:
         str: A formatted prompt instructing the summarizer to extract key insights concisely.
     """
+    if is_first_round:
+        response_format = textwrap.dedent(
+            "Suggestions of the lawyer agents:\n"
+            "<agent> agent suggests:\n"
+            "  [\n"
+            "    (<executable cli command>, <justification>),\n"
+            "    ...\n"
+            "  ]\n"
+        )
+    else:
+        response_format = textwrap.dedent(
+            "Here are the suggestions of the lawyer agents:\n"
+            "<agent> agent suggests:\n"
+            "  [\n"
+            "    (<executable cli command>, <justification>) - APPROVED,\n"
+            "    ...\n"
+            "  ]\n"
+            "Suggestions under discussion:\n"
+            "<agent> suggests:\n"
+            "  [ (<executable cli command>, <justification>), ... ],\n"
+            "  but is opposed by <agent> because <reason>, and suggests alternative:\n"
+            "  [ (<executable cli command>, <justification>), ... ]\n"
+        )
+
     return TextPrompt(
-        "Summarize the following agent responses efficiently. "
-        f"Now it's {debate_round} round. for the first round, use 'FIRST ROUND FORMAT'. "
-        "For subsequent rounds, use 'HIGHER ROUND FORMAT'. "
-        "Focus on key actions and justifications, avoiding unnecessary details.\n\n"
+        "Summarize the ALL following agent proposals efficiently into this format:\n"
+        + response_format +
+        "\n"
+        "Focus on key actions and justifications, avoiding unnecessary details. If multiple agents suggest same command"
+        "wrap it together.\n\n"
         f"Proposals:\n{proposals}"
     )

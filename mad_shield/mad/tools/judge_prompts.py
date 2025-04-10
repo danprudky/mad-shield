@@ -1,3 +1,5 @@
+import textwrap
+
 from camel.prompts import TextPrompt
 
 
@@ -37,15 +39,38 @@ def init_prompt(component_list: str) -> str:
         "- If consensus is reached, respond using the **FINAL PROPOSALS FORMAT**.\n"
         "- If consensus **is not reached** and the debate ends due to the maximum number of rounds, respond with the same format but **omit proposals still under discussion**.\n"
         "- If consensus **is not reached** and the debate is still ongoing, respond with: **'DEBATE HAS TO CONTINUE'**.\n\n"
-        
-        "FINAL PROPOSALS FORMAT:\n"
-        
-        "DEBATE IS OVER!\n"
-        "Here are all approved suggestions of all agents:\n"
-        "  [\n"
-        "    (<agent>, <executable cli command>),\n"
-        "    (<agent>, <executable cli command>),\n"
-        "  ]\n"
-        "...",
+        "- If any agents propose same command, you can merge it as 'More agents'"
     )
 
+def judge_debate_prompt(proposal_summary: str, is_last_round: bool):
+
+    if is_last_round:
+        return TextPrompt(
+            "Pick all **APPROVED ONLY** proposals and based on defined CONSENSUS RULES and end the debate.\n"
+            "RESPONSE FORMAT:\n"
+            + get_response_format() +
+            "Here are proposals:"
+            f"{proposal_summary}"
+        )
+    else:
+        return TextPrompt(
+            "Follow these steps:"
+            "1. Based on round proposals evaluate whether all agents have approved all of them."
+            "2. If **NOT** all agents have approved all of them, respond with: **DEBATE HAS TO CONTINUE**."
+            "3. If they approved all of proposals based on defined CONSENSUS RULES, pick all proposals and end the debate."
+            "RESPONSE FORMAT:\n"
+            + get_response_format() +
+            "Here are proposals:"
+            f"{proposal_summary}"
+        )
+
+def get_response_format():
+    return textwrap.dedent(
+    "   DEBATE IS OVER!\n"
+    "   Here are all approved suggestions of all agents:\n"
+    "   [\n"
+    "       (<agent>, <executable cli command>),\n"
+    "       (<agent>, <executable cli command>),\n"
+    "       ...\n"
+    "   ]\n"
+    )
