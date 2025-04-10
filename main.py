@@ -1,13 +1,13 @@
 import asyncio
 
-from mad_shield import *
-
+from mad_shield import MadShield
 
 def main() -> None:
-    mad_shield = MadShield("mad_shield/config/agents.yaml", 4)
+    config_path = "mad_shield/config/agents.yaml"
+    max_debate_rounds = 4
 
-    asyncio.run(mad_shield.defend("test/alert/sql_injection"))
-
+    mad_shield = MadShield(config_path, max_debate_rounds)
+    asyncio.run(mad_shield.run_service())
 
 if __name__ == "__main__":
     main()
