@@ -6,7 +6,7 @@ from ...configers import ModelLoader
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from mad_shield.mad.mad import MultiAgentDebate
+    from ..mad import MultiAgentDebate
     from camel.models import BaseModelBackend
 
 

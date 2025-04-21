@@ -6,7 +6,7 @@ class AppConfig:
     not_execute_commands: bool
     process_one: bool
 
-    def __new__(cls):
+    def __new__(cls) -> "AppConfig":
         if cls._instance is None:
             cls._instance = super(AppConfig, cls).__new__(cls)
             cls._instance.max_debate_rounds = 4
@@ -15,7 +15,13 @@ class AppConfig:
             cls._instance.process_one = False
         return cls._instance
 
-    def set_values(self, max_debate_rounds, polling_interval,  debug=False, not_execute_commands=False, process_one=False) -> None:
+    def set_values(self,
+                   max_debate_rounds: int,
+                   polling_interval: int,
+                   debug: bool = False,
+                   not_execute_commands: bool = False,
+                   process_one: bool = False
+                   ) -> None:
         self.max_debate_rounds = max_debate_rounds
         self.polling_interval = polling_interval
         self.debug = debug
@@ -23,5 +29,5 @@ class AppConfig:
         self.process_one = process_one
 
 
-def app_config():
+def app_config() -> AppConfig:
     return AppConfig()

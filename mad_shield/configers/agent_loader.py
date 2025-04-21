@@ -1,6 +1,6 @@
 from typing import cast
 
-from .loader import ConfigLoader
+from .config_loader import ConfigLoader
 
 
 class AgentLoader(ConfigLoader):

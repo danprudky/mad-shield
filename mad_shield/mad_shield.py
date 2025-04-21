@@ -1,9 +1,9 @@
 import asyncio
 import os
 
+from .app_config import app_config
 from .configers import AgentLoader
-from .agents.componentAgent import ComponentAgent
-from .configers.app import app_config
+from .agents.component_agent import ComponentAgent
 from .mad import *
 
 
@@ -25,7 +25,7 @@ class MadShield:
             for component in AgentLoader(self.agent_config_path).load().items()
         ]
 
-    def _load_mad(self):
+    def _load_mad(self) -> None:
         self.mad = MultiAgentDebate(self.components)
 
     async def defend(self, alert_path: str) -> None:
@@ -69,6 +69,6 @@ class MadShield:
                     self._reset()
             await asyncio.sleep(app_config().polling_interval)
 
-    def _reset(self):
+    def _reset(self) -> None:
         self._load_components()
         self._load_mad()

@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 
 
 class ConfigLoader:
-    """Třída pro načtení konfigurace."""
-
     def __init__(self, config_path: str) -> None:
         load_dotenv()
         self.api_key = os.getenv("OPENAI_API_KEY")

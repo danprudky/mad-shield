@@ -1,16 +1,15 @@
 import time
-import ast
 import re
 
 from typing import List, Tuple
 from typing import TYPE_CHECKING
 
 from .agents import *
+from ..app_config import app_config
 from ..command import Command
-from ..configers.app import app_config
 
 if TYPE_CHECKING:
-    from mad_shield.agents.componentAgent import ComponentAgent
+    from ..agents.component_agent import ComponentAgent
 
 
 class MultiAgentDebate:
@@ -108,7 +107,7 @@ class MultiAgentDebate:
         return "\n\n".join(proposal for _, proposal in proposals)
 
     @staticmethod
-    def _log(message: str, start_time: float, content: str) -> None:
+    def _log(message: str, start_time: float | None, content: str) -> None:
         print(f"\n{message}")
         if start_time:
             print(f"Time elapsed: {time.time() - start_time:.2f}s")
@@ -116,6 +115,6 @@ class MultiAgentDebate:
             print(content)
 
     def _log_result(
-        self, round_number: int, start_time: float, result: str
+        self, round_number: int, start_time: float | None, result: str
     ) -> None:
         self._log(f"{round_number}. round judge result", start_time, result)

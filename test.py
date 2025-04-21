@@ -2,17 +2,18 @@ import subprocess
 import time
 import csv
 import os
+from typing import Tuple, Dict, Any, cast
 
 from dotenv import load_dotenv
 from datetime import date
 
-import requests
+import requests  # type: ignore
 
 OUTPUT_FILE = "benchmark_results.csv"
-RUNS_PER_ROUND = 3
-ROUND_VALUES = range(2, 5)  # 2 až 5
+RUNS_PER_ROUND = 10
+ROUND_VALUES = range(2, 6)  # 2 až 5
 
-def get_token_usage():
+def get_token_usage() -> Dict[str, Any]:
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     headers = {'Authorization': f'Bearer {api_key}'}
@@ -20,9 +21,9 @@ def get_token_usage():
     params = {'date': date.today().strftime('%Y-%m-%d')}
 
     response = requests.get(url, headers=headers, params=params)
-    return response.json()
+    return cast(Dict[str, Any], response.json())
 
-def get_token_stats():
+def get_token_stats() -> Tuple[int, int]:
     usage_data = get_token_usage()
     total_input_tokens = 0
     total_output_tokens = 0
@@ -33,7 +34,7 @@ def get_token_stats():
 
     return total_input_tokens, total_output_tokens
 
-def run_once(max_rounds):
+def run_once(max_rounds: int) -> Dict[str, Any]:
     start_time = time.time()
 
     start_input_tokens, start_output_tokens = get_token_stats()
@@ -68,7 +69,7 @@ def run_once(max_rounds):
         "stderr": result.stderr.strip() if result.returncode != 0 else ""
     }
 
-def main():
+def main() -> None:
     with open(OUTPUT_FILE, mode='w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=[
             "max_rounds", "duration_sec",

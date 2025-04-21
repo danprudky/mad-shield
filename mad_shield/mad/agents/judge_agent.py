@@ -1,13 +1,13 @@
 import asyncio
 from typing import TYPE_CHECKING, List, Tuple
 
-from .debate import DebateAgent
+from .debate_agent import DebateAgent
 
-from mad_shield.mad.tools.judge_prompts import *
-from .lawyer import LawyerAction
+from ..prompts.judge_prompts import *
+from .lawyer_agent import LawyerAction
 
 if TYPE_CHECKING:
-    from mad_shield.mad.mad import MultiAgentDebate
+    from ..mad import MultiAgentDebate
 
 
 class JudgeAgent(DebateAgent):

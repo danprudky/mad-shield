@@ -2,10 +2,10 @@ import argparse
 import asyncio
 
 from mad_shield import MadShield
-from mad_shield.configers.app import app_config
+from mad_shield.app_config import app_config
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run multi-agent debate shield.")
 
     parser.add_argument(

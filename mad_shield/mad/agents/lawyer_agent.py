@@ -1,14 +1,14 @@
 from enum import Enum
 
-from mad_shield.mad.agents.debate import DebateAgent
+from .debate_agent import DebateAgent
 
 from typing import TYPE_CHECKING, Tuple
 
-from mad_shield.mad.tools.lawyer_prompts import *
+from ..prompts.lawyer_prompts import *
 
 if TYPE_CHECKING:
-    from mad_shield.agents import ComponentAgent
-    from mad_shield.mad import MultiAgentDebate
+    from ...agents import ComponentAgent
+    from .. import MultiAgentDebate
 
 
 class LawyerAction(Enum):
