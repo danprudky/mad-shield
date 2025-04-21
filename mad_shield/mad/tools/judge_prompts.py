@@ -35,7 +35,7 @@ def judge_debate_prompt(proposal_summary: str, is_last_round: bool) -> TextPromp
         return TextPrompt(
             "Review current round proposals.\n"
             "1. Check if **all agents approved all commands**.\n"
-            "2. If yes, debate is over. Respond with FINAL PROPOSALS FORMAT.\n"
+            "2. If yes, debate is over. Respond with RESPONSE FORMAT.\n"
             "3. If not, respond with: **DEBATE HAS TO CONTINUE**.\n\n"
             "RESPONSE FORMAT:\n" + get_response_format() + "\nPROPOSALS:\n"
             f"{proposal_summary}"
