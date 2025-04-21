@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING
 
 from .agents import *
 from ..command import Command
+from ..configers.app import app_config
 
 if TYPE_CHECKING:
     from mad_shield.agents.componentAgent import ComponentAgent
 
 
 class MultiAgentDebate:
-    def __init__(self, components: List["ComponentAgent"], max_rounds: int = 5) -> None:
-        self.max_rounds = max_rounds
+    def __init__(self, components: List["ComponentAgent"]) -> None:
         self.components = components
         self.lawyers = [component.hire_lawyer(self) for component in self.components]
         self.judge = JudgeAgent(self)
@@ -24,21 +24,26 @@ class MultiAgentDebate:
 
     async def debate(self, alert: str) -> List[Command]:
 
-        start_time = time.time()  # TODO: DEBUG
-        self._log(f"Max rounds: {self.max_rounds}", 0.0, "")  # TODO: DEBUG
+        if app_config().debug:
+            start_time = time.time()
+            self._log(f"Max rounds: {app_config().max_debate_rounds}", 0.0, "")
+        else:
+            start_time = None
 
         proposals = await self._get_initial_proposals(alert, start_time)
         round_result = ""
 
-        for round_number in range(2, self.max_rounds + 1):
+        for round_number in range(2, app_config().max_debate_rounds + 1):
             proposals = await self._get_reacts_to_proposals(
                 proposals, round_number, start_time
             )
 
             round_result = self.judge.judge_debate(
-                proposals, is_last_round=(round_number == self.max_rounds)
+                proposals, is_last_round=(round_number == app_config().max_debate_rounds)
             )
-            self._log_result(round_number, start_time, round_result)
+
+            if app_config().debug:
+                self._log_result(round_number, start_time, round_result)
 
             if "OVER" in round_result:
                 return self._parse_final_result(round_result)
@@ -46,21 +51,26 @@ class MultiAgentDebate:
         # If we exit loop without consensus
         return self._parse_final_result(round_result)
 
-    async def _get_initial_proposals(self, alert: str, start_time: float) -> str:
+    async def _get_initial_proposals(self, alert: str, start_time: float|None) -> str:
         proposals = await self.judge.get_proposals(alert)
         result = self._format_proposals(proposals)
-        self._log("Proposals ready", start_time, result)  # TODO: DEBUG
+
+        if app_config().debug:
+            self._log("Proposals ready", start_time, result)
         return result
 
     async def _get_reacts_to_proposals(
-        self, proposals: str, round_number: int, start_time: float
+        self, proposals: str, round_number: int, start_time: float|None
     ) -> str:
         if round_number == 2:
             new_proposals = await self.judge.get_reacts(proposals)
         else:
             new_proposals = await self.judge.get_reacts_and_corrections(proposals)
         result = self._format_proposals(new_proposals)
-        self._log("Reacts ready", start_time, result)  # TODO: DEBUG
+
+        if app_config().debug:
+            self._log("Reacts ready", start_time, result)
+
         return result
 
     def _parse_final_result(self, debate_result: str) -> List[Command]:
@@ -98,7 +108,7 @@ class MultiAgentDebate:
         return "\n\n".join(proposal for _, proposal in proposals)
 
     @staticmethod
-    def _log(message: str, start_time: float, content: str) -> None:  # TODO: DEBUG
+    def _log(message: str, start_time: float, content: str) -> None:
         print(f"\n{message}")
         if start_time:
             print(f"Time elapsed: {time.time() - start_time:.2f}s")
@@ -107,5 +117,5 @@ class MultiAgentDebate:
 
     def _log_result(
         self, round_number: int, start_time: float, result: str
-    ) -> None:  # TODO: DEBUG
+    ) -> None:
         self._log(f"{round_number}. round judge result", start_time, result)

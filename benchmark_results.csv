@@ -1,0 +1,10 @@
+max_rounds,duration_sec,prompt_tokens,completion_tokens,success,stderr
+2,45.75,17281,3761,True,
+2,28.14,17031,4154,True,
+2,34.97,17347,3672,True,
+3,58.19,48693,7373,True,
+3,41.77,35958,5291,True,
+3,55.9,58728,8916,True,
+4,81.51,109282,11822,True,
+4,93.32,110440,13547,True,
+4,88.41,113341,12054,True,

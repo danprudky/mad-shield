@@ -1,5 +1,6 @@
 import os
 
+from ..configers.app import app_config
 from ..mad.agents import LawyerAgent
 
 
@@ -30,6 +31,7 @@ class ComponentAgent:
         return LawyerAgent(self, mad)
 
     def execute(self, command: str) -> int:
-        print(self.name + " executing command: " + command)
-        return 0
-        # return os.system(command)
+        if app_config().not_execute_commands:
+            print(self.name + " executing command: " + command)
+            return 0
+        return os.system(command)

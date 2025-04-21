@@ -3,6 +3,7 @@ import os
 
 from .configers import AgentLoader
 from .agents.componentAgent import ComponentAgent
+from .configers.app import app_config
 from .mad import *
 
 
@@ -12,9 +13,8 @@ def load_alert(path: str) -> str:
 
 
 class MadShield:
-    def __init__(self, agent_config_path: str, max_debate_rounds: int) -> None:
+    def __init__(self, agent_config_path: str) -> None:
         self.agent_config_path = agent_config_path
-        self.max_debate_rounds = max_debate_rounds
 
         self._load_components()
         self._load_mad()
@@ -26,7 +26,7 @@ class MadShield:
         ]
 
     def _load_mad(self):
-        self.mad = MultiAgentDebate(self.components, self.max_debate_rounds)
+        self.mad = MultiAgentDebate(self.components)
 
     async def defend(self, alert_path: str) -> None:
         alert = load_alert(alert_path)
@@ -35,22 +35,39 @@ class MadShield:
         for command in commands:
             command.component.execute(command.command)
 
-    async def run_service(self, alerts_dir: str = "alert", alert_extension: str = ".alert", poll_interval: int = 2) -> None:
-        print("MadShield running in passive mode. Waiting for alerts...")
+    async def run_service(self, alerts_dir: str = "alert", alert_extension: str = ".alert") -> None:
+        if app_config().debug:
+            print("MadShield running in passive mode. Waiting for alerts...")
+
         while True:
-            print(os.listdir(alerts_dir))
             alert_files = [
                 f for f in os.listdir(alerts_dir) if f.endswith(alert_extension)
             ]
+
+            if app_config().debug:
+                print(alert_files)
+
             if alert_files:
                 for filename in alert_files:
                     alert_path = os.path.join(alerts_dir, filename)
-                    print(f"Alert found: {alert_path}. Start defending...")
+
+                    if app_config().debug:
+                        print(f"Alert found: {alert_path}. Start defending...")
+
                     await self.defend(alert_path)
+
+                    if app_config().debug:
+                        print(f"Alert {filename} processed.")
+
+                    if app_config().process_one:
+                        return
+
                     os.remove(alert_path)
-                    print(f"Alert {filename} processed and deleted.")
+                    if app_config().debug:
+                        print(f"Alert {filename} deleted.")
+
                     self._reset()
-            await asyncio.sleep(poll_interval)
+            await asyncio.sleep(app_config().polling_interval)
 
     def _reset(self):
         self._load_components()
