@@ -14,7 +14,7 @@ class DebateAgent(ChatAgent):
     def __init__(self, mad: "MultiAgentDebate", role: str, **kwargs: Any) -> None:
 
         self.mad: "MultiAgentDebate" = mad
-        self.model: "BaseModelBackend" = ModelLoader().gpt_4o_mini()
+        self.model: "BaseModelBackend" = ModelLoader().load_model()
 
         self.role: str = role
 
