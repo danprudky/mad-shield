@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  defender:
+    build: ./defender
+    container_name: dos_defender
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    volumes:
+      - suri_logs:/var/log/suricata
+    restart: unless-stopped
+    networks:
+      - dosnet
+
+  attacker:
+    build: ./attacker
+    container_name: dos_attacker
+    depends_on:
+      - defender
+    restart: "no"
+    networks:
+      - dosnet
+
+networks:
+  dosnet:
+    driver: bridge
+
+volumes:
+  suri_logs:

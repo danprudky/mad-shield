@@ -100,7 +100,24 @@ class MultiAgentDebate:
                 raise ValueError(f"Unknown agent role: {role}")
             commands_list.append(Command(matched_lawyers[0].component, command))
 
-        return commands_list
+        return self._normalize_commands(commands_list)
+
+    @staticmethod
+    def _normalize_commands(commands: List[Command]) -> List[Command]:
+        """Remove duplicates and strip leading 'sudo' from each command."""
+        seen = set()
+        unique_commands = []
+
+        for cmd in commands:
+            normalized = cmd.command.strip()
+            if normalized.startswith("sudo "):
+                normalized = normalized[5:].strip()
+
+            if normalized not in seen:
+                seen.add(normalized)
+                unique_commands.append(Command(cmd.component, normalized))
+
+        return unique_commands
 
     @staticmethod
     def _format_proposals(proposals: List[Tuple[str, str]]) -> str:

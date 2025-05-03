@@ -1,8 +1,12 @@
 import argparse
 import asyncio
+import os
 
 from mad_shield import MadShield
 from mad_shield.app_config import app_config
+
+import dotenv
+dotenv.load_dotenv()
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,9 +57,10 @@ def main() -> None:
     )
 
     config_path = "mad_shield/config/agents.yaml"
+    alerts_path = os.getenv('ALERT_FILE', "alert/eve-alert.json")
 
     mad_shield = MadShield(config_path)
-    asyncio.run(mad_shield.run_service())
+    asyncio.run(mad_shield.run_service(alerts_path))
 
 if __name__ == "__main__":
     main()
