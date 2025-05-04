@@ -1,8 +1,8 @@
-version: "3.8"
-
 services:
   defender:
-    build: ./defender
+    build:
+      context: ../../..
+      dockerfile: mad-shield/test/dos/defender/Dockerfile
     container_name: dos_defender
     cap_add:
       - NET_RAW
@@ -14,7 +14,9 @@ services:
       - dosnet
 
   attacker:
-    build: ./attacker
+    build:
+      context: ../../..
+      dockerfile: mad-shield/test/dos/attacker/Dockerfile
     container_name: dos_attacker
     depends_on:
       - defender

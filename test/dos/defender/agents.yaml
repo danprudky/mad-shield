@@ -1,0 +1,18 @@
+agents:
+  host:
+    - /etc/hostname
+    - /etc/hosts
+    - /etc/resolv.conf
+
+  kernel:
+    - /etc/sysctl.conf
+    - /etc/sysctl.d/10-network-security.conf
+    - /etc/security/limits.conf
+
+  jail:
+    - /etc/fail2ban/fail2ban.conf
+    - /etc/fail2ban/jail.conf
+
+  filter:
+    - /etc/iptables/rules.v4
+    - /etc/iptables/rules.v6

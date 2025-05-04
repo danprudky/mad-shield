@@ -34,4 +34,5 @@ class ComponentAgent:
         if app_config().not_execute_commands:
             print(self.name + " executing command: " + command)
             return 0
+        print("Executing command: " + command)
         return os.system(command)
