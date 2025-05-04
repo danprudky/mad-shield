@@ -9,9 +9,9 @@ from datetime import date
 
 import requests  # type: ignore
 
-OUTPUT_FILE = "benchmark_results.csv"
+OUTPUT_FILE = "test/benchmark/benchmark_results.csv"
 RUNS_PER_ROUND = 10
-ROUND_VALUES = range(2, 6)  # 2 až 5
+ROUND_VALUES = [2, 3, 4, 5, 8]
 
 def get_token_usage() -> Dict[str, Any]:
     load_dotenv()
@@ -41,7 +41,7 @@ def run_once(max_rounds: int) -> Dict[str, Any]:
 
     result = subprocess.run([
             "python3.12",
-            "main.py",
+            "run.py",
             "--max-debate-rounds", str(max_rounds),
             "--debug",
             "--not-execute-commands",
@@ -53,14 +53,16 @@ def run_once(max_rounds: int) -> Dict[str, Any]:
 
     duration = time.time() - start_time
 
-    with open(f"test/test_{max_rounds}_{start_time}", "w") as f:
+    with open(f"test/benchmark/test_{max_rounds}_{start_time}", "w") as f:
         f.write(result.stdout)
         f.write("\n--- STDERR ---\n")
         f.write(result.stderr)
 
     end_input_tokens, end_output_tokens = get_token_stats()
 
+    load_dotenv()
     return {
+        "model": os.getenv("DEFAULT_MODEL_TYPE"),
         "max_rounds": max_rounds,
         "duration_sec": round(duration, 2),
         "prompt_tokens": end_input_tokens - start_input_tokens,
@@ -70,18 +72,25 @@ def run_once(max_rounds: int) -> Dict[str, Any]:
     }
 
 def main() -> None:
-    with open(OUTPUT_FILE, mode='w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=[
-            "max_rounds", "duration_sec",
-            "prompt_tokens", "completion_tokens",
-            "success", "stderr"
-        ])
-        writer.writeheader()
+    if not os.path.exists(OUTPUT_FILE):
+        with open(OUTPUT_FILE, mode='w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=[
+                "model", "max_rounds", "duration_sec",
+                "prompt_tokens", "completion_tokens",
+                "success", "stderr"
+            ])
+            writer.writeheader()
 
-        for max_rounds in ROUND_VALUES:
-            for i in range(RUNS_PER_ROUND):
-                print(f"Spouštím test {i+1}/{RUNS_PER_ROUND} pro max_rounds={max_rounds} ...")
-                result = run_once(max_rounds)
+    for max_rounds in ROUND_VALUES:
+        for i in range(RUNS_PER_ROUND):
+            print(f"Spouštím test {i+1}/{RUNS_PER_ROUND} pro max_rounds={max_rounds} ...")
+            result = run_once(max_rounds)
+            with open(OUTPUT_FILE, mode='a', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=[
+                    "model", "max_rounds", "duration_sec",
+                    "prompt_tokens", "completion_tokens",
+                    "success", "stderr"
+                ])
                 writer.writerow(result)
 
     print(f"Hotovo! Výsledky jsou uložené v {OUTPUT_FILE}")
