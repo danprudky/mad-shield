@@ -17,9 +17,10 @@ models:
     temperature: 0.0
     top_p: 0.9
     n: 1
-    max_tokens: 10000
+    max_tokens: 15000
   o3-mini:
     temperature: 0.0
     top_p: 0.9
     n: 1
-    max_tokens: 10000
+    max_tokens: 15000
+    reasoning_effort: medium

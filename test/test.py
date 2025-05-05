@@ -11,7 +11,7 @@ import requests  # type: ignore
 
 OUTPUT_FILE = "test/benchmark/benchmark_results.csv"
 RUNS_PER_ROUND = 10
-ROUND_VALUES = [2, 3, 4, 5, 8]
+ROUND_VALUES = [4]
 
 def get_token_usage() -> Dict[str, Any]:
     load_dotenv()

@@ -1,338 +1,61 @@
-gpt-4o-mini,2,44.83,16909,4369,True,
-gpt-4o-mini,2,32.84,19651,4940,True,
-gpt-4o-mini,2,34.75,19027,4389,True,
-gpt-4o-mini,2,31.07,20353,4982,True,
-gpt-4o-mini,2,31.07,19550,4644,True,
-gpt-4o-mini,2,35.42,16615,4103,True,
-gpt-4o-mini,2,36.59,19656,4389,True,
-gpt-4o-mini,2,31.37,16423,3959,True,
-gpt-4o-mini,2,37.69,19376,5337,True,
-gpt-4o-mini,2,51.71,20135,5385,True,
-gpt-4o-mini,3,70.59,49603,9432,True,
-gpt-4o-mini,3,75.19,67751,11315,True,
-gpt-4o-mini,3,73.84,51528,8691,True,
-gpt-4o-mini,3,70.81,61675,10548,True,
-gpt-4o-mini,3,55.66,54472,8069,True,
-gpt-4o-mini,3,60.61,48031,7823,True,
-gpt-4o-mini,3,69.28,62181,11020,True,
-gpt-4o-mini,3,60.99,55264,8327,True,
-gpt-4o-mini,3,98.78,55636,9272,True,
-gpt-4o-mini,3,96.05,60948,11032,True,
-gpt-4o-mini,4,101.13,118862,14674,True,
-gpt-4o-mini,4,112.81,100990,16121,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,4,69.55,95755,10672,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,4,84.23,130242,16032,True,
-gpt-4o-mini,4,88.3,122280,16028,True,
-gpt-4o-mini,4,81.54,100376,13041,True,
-gpt-4o-mini,4,92.73,104665,13828,True,
-gpt-4o-mini,4,77.19,97087,11716,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,4,78.26,117187,14424,True,
-gpt-4o-mini,4,72.4,115567,12371,True,
-gpt-4o-mini,5,106.81,150579,18707,True,
-gpt-4o-mini,5,129.73,152830,22580,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,5,96.68,163607,15255,True,
-gpt-4o-mini,5,83.52,165798,14857,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,5,97.75,164773,16672,True,
-gpt-4o-mini,5,116.24,158789,19807,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,5,118.31,169382,16713,True,
-gpt-4o-mini,5,104.5,148590,18669,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,5,90.28,173011,18178,True,
-gpt-4o-mini,5,107.35,152897,18454,True,
-gpt-4o-mini,8,200.09,328233,28618,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,8,216.23,272270,35672,True,
-gpt-4o-mini,8,237.37,259163,35381,True,
-gpt-4o-mini,8,226.18,286689,32693,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,8,435.41,320633,29787,True,
-gpt-4o-mini,8,224.14,329812,30468,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,8,179.96,266962,31917,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,8,154.97,326301,27545,False,"Traceback (most recent call last):
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 66, in <module>
-    main()
-  File ""/Users/danielprudky/projects/vut/mad-shield/run.py"", line 63, in main
-    asyncio.run(mad_shield.run_service(alerts_path))
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py"", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py"", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 56, in run_service
-    await self.defend(alert)
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py"", line 36, in defend
-    commands = await self.mad.debate(alert)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 48, in debate
-    return self._parse_final_result(round_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ""/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py"", line 91, in _parse_final_result
-    raise ValueError(""No valid (role, command) pairs found."")
-ValueError: No valid (role, command) pairs found."
-gpt-4o-mini,8,140.38,312874,23653,True,
-gpt-4o-mini,8,53.58,52121,7331,True,
+model,max_rounds,duration_sec,prompt_tokens,completion_tokens,success,debate_duration_sec,consensus,commands
+gpt-4o-mini,2,44.83,16909,4369,True,42.20,0,5
+gpt-4o-mini,2,32.84,19651,4940,True,30.27,0,6
+gpt-4o-mini,2,34.75,19027,4389,True,31.64,0,7
+gpt-4o-mini,2,31.07,20353,4982,True,27.67,0,4
+gpt-4o-mini,2,31.07,19550,4644,True,28.49,0,6
+gpt-4o-mini,2,35.42,16615,4103,True,32.66,0,10
+gpt-4o-mini,2,36.59,19656,4389,True,34.38,0,7
+gpt-4o-mini,2,31.37,16423,3959,True,29.23,0,13
+gpt-4o-mini,2,37.69,19376,5337,True,34.49,0,7
+gpt-4o-mini,2,51.71,20135,5385,True,49.53,0,8
+gpt-4o-mini,3,70.59,49603,9432,True,67.56,0,7
+gpt-4o-mini,3,75.19,67751,11315,True,71.94,0,7
+gpt-4o-mini,3,73.84,51528,8691,True,71.44,0,7
+gpt-4o-mini,3,70.81,61675,10548,True,68.75,0,6
+gpt-4o-mini,3,55.66,54472,8069,True,52.40,0,5
+gpt-4o-mini,3,60.61,48031,7823,True,57.93,0,7
+gpt-4o-mini,3,69.28,62181,11020,True,65.80,0,7
+gpt-4o-mini,3,60.99,55264,8327,True,58.36,0,4
+gpt-4o-mini,3,98.78,55636,9272,True,96.59,0,8
+gpt-4o-mini,3,96.05,60948,11032,True,93.59,0,11
+gpt-4o-mini,4,101.13,118862,14674,True,98.54,0,8
+gpt-4o-mini,4,112.81,100990,16121,False,109.64,0,13
+gpt-4o-mini,4,69.55,95755,10672,False,67.12,0,8
+gpt-4o-mini,4,84.23,130242,16032,True,81.16,0,7
+gpt-4o-mini,4,88.3,122280,16028,True,85.50,0,9
+gpt-4o-mini,4,81.54,100376,13041,True,79.19,0,4
+gpt-4o-mini,4,92.73,104665,13828,True,90.03,0,11
+gpt-4o-mini,4,77.19,97087,11716,False,74.79,0,9
+gpt-4o-mini,4,78.26,117187,14424,True,75.85,0,6
+gpt-4o-mini,4,72.4,115567,12371,True,69.44,0,5
+gpt-4o-mini,5,106.81,150579,18707,True,104.45,0,6
+gpt-4o-mini,5,129.73,152830,22580,False,127.24,0,9
+gpt-4o-mini,5,96.68,163607,15255,True,93.49,0,5
+gpt-4o-mini,5,83.52,165798,14857,False,80.26,0,7
+gpt-4o-mini,5,97.75,164773,16672,True,94.91,0,6
+gpt-4o-mini,5,116.24,158789,19807,False,112.99,0,8
+gpt-4o-mini,5,118.31,169382,16713,True,115.79,0,6
+gpt-4o-mini,5,104.5,148590,18669,False,102.10,0,12
+gpt-4o-mini,5,90.28,173011,18178,True,87.89,0,5
+gpt-4o-mini,5,107.35,152897,18454,True,104.30,0,8
+gpt-4o-mini,8,200.09,328233,28618,False,197.87,0,7
+gpt-4o-mini,8,216.23,272270,35672,True,213.37,0,12
+gpt-4o-mini,8,237.37,259163,35381,True,233.50,0,14
+gpt-4o-mini,8,226.18,286689,32693,False,223.00,0,7
+gpt-4o-mini,8,435.41,320633,29787,True,433.05,0,9
+gpt-4o-mini,8,224.14,329812,30468,False,221.60,0,9
+gpt-4o-mini,8,179.96,266962,31917,False,176.45,0,7
+gpt-4o-mini,8,154.97,326301,27545,False,151.83,0,9
+gpt-4o-mini,8,140.38,312874,23653,True,138.04,0,9
+gpt-4o-mini,8,53.58,52121,7331,True,50.61,0,5
+o3-mini,4,211.03,107946,48509,False,208.44,0,3
+o3-mini,4,268.23,158941,57033,False,265.91,0,8
+o3-mini,4,198.01,144135,53362,True,195.11,0,3
+o3-mini,4,208.71,120262,47157,False,200.42,0,4
+o3-mini,4,244.45,140906,47240,False,241.32,0,13
+o3-mini,4,204.56,132307,50659,True,200.96,0,5
+o3-mini,4,209.69,133696,57110,False,206.43,0,5
+o3-mini,4,135.49,53280,34362,False,132.08,0,3
+o3-mini,4,190.72,127635,48843,False,188.36,0,2
+o3-mini,4,185.99,147876,53206,False,183.39,0,1

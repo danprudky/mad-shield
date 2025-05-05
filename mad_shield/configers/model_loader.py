@@ -25,16 +25,25 @@ class ModelLoader(ConfigLoader):
         model_config = self.model_configs[self.default_model]
         temperature = model_config["temperature"] if self.default_temperature is None else self.default_temperature
 
-        config = ChatGPTConfig(
-            temperature=temperature,
-            top_p=model_config["top_p"],
-            n=model_config["n"],
-            max_tokens=model_config["max_tokens"],
-        )
+        if self.default_model == "o3-mini":
+            config = {
+                'temperature' : temperature,
+                'top_p' : model_config["top_p"],
+                'n' : model_config["n"],
+                'max_completion_tokens' : model_config["max_tokens"],
+                'reasoning_effort' : model_config["reasoning_effort"],
+            }
+        else:
+            config = ChatGPTConfig(
+                temperature=temperature,
+                top_p=model_config["top_p"],
+                n=model_config["n"],
+                max_tokens=model_config["max_tokens"],
+            ).as_dict()
 
         return ModelFactory.create(
             model_platform=ModelPlatformType.OPENAI,
             model_type=model_types[self.default_model],
             api_key=self.api_key,
-            model_config_dict=config.as_dict(),
+            model_config_dict=config,
         )
