@@ -83,7 +83,6 @@ class MultiAgentDebate:
 
         cleaned_result = debate_result[start:end + 1]
 
-        # Find all (role, command) with regex
         pattern = re.compile(r"\(\s*([a-zA-Z0-9_]+)\s*,\s*(.*?)\s*\)")
         matches = pattern.findall(cleaned_result)
 
@@ -91,20 +90,25 @@ class MultiAgentDebate:
             raise ValueError("No valid (role, command) pairs found.")
 
         for role, command in matches:
-            matched_lawyers = [
-                agent for agent in self.lawyers
-                if agent.component.name in role
-            ]
 
-            if not matched_lawyers:
-                raise ValueError(f"Unknown agent role: {role}")
-            commands_list.append(Command(matched_lawyers[0].component, command))
+            if role.lower() == "more agents":
+                component = self.lawyers[0].component
+            else:
+                matched_lawyers = [
+                    agent for agent in self.lawyers
+                    if agent.component.name in role
+                ]
+
+                if not matched_lawyers:
+                    raise ValueError(f"Unknown agent role: {role}")
+                component = matched_lawyers[0].component
+
+            commands_list.append(Command(component, command))
 
         return self._normalize_commands(commands_list)
 
     @staticmethod
     def _normalize_commands(commands: List[Command]) -> List[Command]:
-        """Remove duplicates and strip leading 'sudo' from each command."""
         seen = set()
         unique_commands = []
 
