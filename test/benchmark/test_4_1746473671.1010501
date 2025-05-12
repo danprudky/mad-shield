@@ -1,0 +1,671 @@
+MadShield running in passive mode. Waiting for alerts...
+Alert 203.0.113.100_TCP_5_to_server loaded
+
+Max rounds: 4
+
+Proposals ready
+Time elapsed: 15.40s
+I'm firewall_lawyer and suggesting these proposals:
+   [
+       ("ufw deny from 203.0.113.100", "Immediately block all traffic originated from the suspicious IP to prevent further SYN flood attempts that target non-permitted ports."),
+       ("ufw reload", "Reload the firewall rules to ensure that the new block is applied without delay, reinforcing our isolation of the malicious source.")
+   ]
+
+I'm server_lawyer and suggesting these proposals:
+   [
+       ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Immediately blocks all TCP traffic on port 21 from the offending IP, stopping the potential SYN flood at its source without affecting Apache on port 80."),
+       ("sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "Implements rate limiting on FTP traffic, which helps mitigate flood attempts from other potential sources while preserving legitimate connections."),
+       ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --set --name ftp_flood", "Starts tracking new FTP connection attempts to identify flooding patterns."),
+       ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 15 --name ftp_flood -j DROP", "Drops connections if more than 15 new FTP sessions are attempted in 60 seconds from any source, adding an extra layer of defense against DOS attempts.")
+   ]
+
+I'm dns_lawyer and suggesting these proposals:
+   [
+       ("iptables -I INPUT -s 203.0.113.100 -j DROP", "Directly block all traffic from the suspicious IP to avoid any lateral movement or potential indirect impact on our DNS service."),
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enable TCP SYN cookies to help mitigate potential SYN flood effects, ensuring our DNS TCP connections remain stable in high-load scenarios."),
+       ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --set", "Start tracking new TCP connections targeted at the DNS port, which helps in rate limiting abnormal bursts that might indicate an attack."),
+       ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --update --seconds 60 --hitcount 20 -j DROP", "Apply a threshold on new DNS connections by dropping any that exceed 20 attempts per minute, thereby defending against flood attempts targeted at the service.")
+   ]
+
+I'm netplan_lawyer and suggesting these proposals:
+   [
+       ("sudo iptables -A INPUT -s 203.0.113.100 -d 192.168.1.100 -p tcp --dport 21 -j DROP", "Directly block any TCP traffic arriving on port 21 from the suspicious source IP. This rule immediately stops the incoming DOS SYN flood from reaching our netplan-managed interface."),
+       ("sudo iptables -I INPUT -d 192.168.1.100 -p tcp --dport 21 -m state --state NEW -m recent --set", "Start tracking new connections to port 21 on our netplan interface. This prepares the groundwork for applying rate limiting on connection attempts."),
+       ("sudo iptables -I INPUT -d 192.168.1.100 -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP", "If there are more than 10 new connections within 60 seconds, drop the packets to mitigate a potential flood attack. This protects the component without interfering with system-wide traffic.")
+   ]
+
+I'm ssh_lawyer and suggesting these proposals:
+   [
+       ("iptables -A INPUT -p tcp -s 203.0.113.100 -j DROP", "Block all incoming traffic from the suspicious IP to prevent spillover effects from the DOS attack—even if the attack is on port 21, this preemptively mitigates potential lateral effects on our SSH service."),
+       ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Protect the SSH port (2222) from SYN flood patterns by rate-limiting new connections; ensures that legitimate admin user sessions are allowed while filtering out potential DOS attempts."),
+       ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "Drop any additional packets targeting the SSH port that exceed our defined rate limit, further preserving component availability during a surge.")
+   ]
+
+Reacts ready
+Time elapsed: 56.57s
+I'm firewall_lawyer:
+APPROVING:
+   [
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "TCP SYN cookies are an effective kernel-level defense against SYN floods. While it's a system hardening measure rather than a firewall command, it complements our overall defense strategy and does not interfere with our ufw management.") - APPROVED,
+   ]
+
+DISAGREE:
+   [
+       (server_lawyer, "sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Using direct iptables commands when our system is managed via ufw can create conflicting configurations; our own 'ufw deny from 203.0.113.100' already blocks the malicious IP globally."),
+       because mixing firewall management layers can lead to unpredictable behavior, and suggesting alternative:
+       [
+           ("ufw deny from 203.0.113.100", "This ufw command ensures that any traffic from the malicious IP is blocked system‐wide in a consistent manner.")
+       ],
+
+       (server_lawyer, "sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "Introducing iptables-based rate limiting on FTP traffic contradicts our ufw default deny policy and adds unnecessary complexity."),
+       because our ufw configuration already does not permit FTP (port 21) traffic, and suggesting alternative:
+       [
+           ("ufw deny 21/tcp", "This reinforces that FTP is not allowed, aligning with our ufw-based strategy.")
+       ],
+
+       (server_lawyer, "sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --set --name ftp_flood", "Tracking new FTP connection attempts via iptables is redundant given that FTP traffic is not permitted; it unnecessarily complicates the rule set."),
+       because consistency in using ufw is key, and suggesting alternative:
+       [
+           ("No action needed", "The default deny policy in ufw already covers this scenario.")
+       ],
+
+       (server_lawyer, "sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 15 --name ftp_flood -j DROP", "Similarly, applying rate-limiting for FTP on port 21 with iptables conflicts with our centralized ufw management, which already drops unauthorized traffic."),
+       because mixing firewall layers can lead to conflicts, and suggesting alternative:
+       [
+           ("No action needed", "Our ufw default deny policy is sufficient for protecting non-permitted ports like FTP.")
+       ],
+
+       (dns_lawyer, "iptables -I INPUT -s 203.0.113.100 -j DROP", "While blocking the malicious IP is important, this iptables rule duplicates our ufw-based block and may lead to configuration drift."),
+       because redundancy from using two different firewall command systems is undesirable, and suggesting alternative:
+       [
+           ("No action needed", "Our existing 'ufw deny from 203.0.113.100' centrally blocks the IP for all components.")
+       ],
+
+       (dns_lawyer, "iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --set", "Rate limiting DNS connections via iptables is unnecessary since our ufw framework enforces a global default deny, and mixing systems may complicate troubleshooting."),
+       because maintaining a single firewall management system is crucial, and suggesting alternative:
+       [
+           ("ufw deny 53/tcp", "Explicitly block non-whitelisted DNS TCP traffic in line with our ufw policies.")
+       ],
+
+       (dns_lawyer, "iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --update --seconds 60 --hitcount 20 -j DROP", "As above, layering iptables rules on top of our ufw configuration creates potential maintenance issues and conflicts."),
+       because our unified ufw approach is preferred, and suggesting alternative:
+       [
+           ("No action needed", "Our system-wide ufw deny and service-specific allowances sufficiently protect DNS.")
+       ],
+
+       (netplan_lawyer, "sudo iptables -A INPUT -s 203.0.113.100 -d 192.168.1.100 -p tcp --dport 21 -j DROP", "Using iptables here conflicts with our ufw-maintained firewall; additionally, FTP (port 21) is already blocked by default via ufw."),
+       because consistency across our components is key, and suggesting alternative:
+       [
+           ("ufw deny 21/tcp", "This command explicitly blocks FTP traffic through ufw, ensuring centralized management.")
+       ],
+
+       (netplan_lawyer, "sudo iptables -I INPUT -d 192.168.1.100 -p tcp --dport 21 -m state --state NEW -m recent --set", "Tracking new FTP connection attempts using iptables is redundant as traffic on port 21 is already denied by ufw."),
+       because extra iptables rules can lead to conflicts with our centralized configuration, and suggesting alternative:
+       [
+           ("No action needed", "FTP is effectively blocked under our ufw policy.")
+       ],
+
+       (netplan_lawyer, "sudo iptables -I INPUT -d 192.168.1.100 -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP", "As with the previous similar rules, using iptables for rate limiting FTP introduces unnecessary complexity when ufw already denies FTP by default."),
+       because maintaining a single firewall system is simpler and safer, and suggesting alternative:
+       [
+           ("No action needed", "Our ufw configuration already ensures that FTP traffic does not occur.")
+       ],
+
+       (ssh_lawyer, "iptables -A INPUT -p tcp -s 203.0.113.100 -j DROP", "Blocking the malicious IP is consistent with our approach, but applying an iptables rule when ufw is our management layer creates potential conflicts."),
+       because direct iptables manipulation alongside ufw may lead to unpredictable rule interactions, and suggesting alternative:
+       [
+           ("ufw deny from 203.0.113.100", "Ensures the malicious IP is blocked via our consistent ufw-managed framework.")
+       ],
+
+       (ssh_lawyer, "iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "This rule targets port 2222 for SSH, yet our SSH service is configured to run on port 22 under ufw; thus it misaligns with our configuration."),
+       because maintaining coherent port configurations is vital, and suggesting alternative:
+       [
+           ("ufw limit ssh/tcp", "Utilize ufw's built-in rate limiting on the correct SSH port (22) to mitigate SYN flood attempts.")
+       ],
+
+       (ssh_lawyer, "iptables -A INPUT -p tcp --dport 2222 -j DROP", "Similarly, dropping packets for SSH on port 2222 is misdirected since our configuration only allows SSH on port 22."),
+       because incorrect port targeting can create gaps in defense, and suggesting alternative:
+       [
+           ("No action needed", "Our SSH protection is applied to port 22 through ufw, so this iptables rule is not required.")
+       ]
+   ]
+
+I'm server_lawyer:
+APPROVING:
+   [
+       ("ufw deny from 203.0.113.100", "Blocking the suspicious IP at the firewall level helps isolate attack traffic and supports our ftp-specific block without interfering with Apache's operations."), 
+       ("ufw reload", "Ensures that the firewall rule is applied immediately, reinforcing system-wide protection."),
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling TCP SYN cookies adds an extra layer of resilience against SYN flood patterns, which benefits all TCP services including those we defend on ftp."),
+       ("iptables -A INPUT -p tcp -s 203.0.113.100 -j DROP", "A system-wide block for the suspicious IP is helpful in controlling lateral movement across services, complementing our ftp-targeted rules."),
+       ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Rate-limiting on SSH (port 2222) provides protection against SYN floods on that service, aligning with overall DOS defense measures."),
+       ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "Dropping excess packets on SSH reinforces the rate limit, thereby preserving system availability during an attack.")
+   ]
+DISAGREE:
+   [
+       ("dns_lawyer", "iptables -I INPUT -s 203.0.113.100 -j DROP", "While blocking the malicious IP entirely appears robust, it is too broad for our ftp service. Our focus is on mitigating the ftp-specific DOS attack without disrupting potential benign web traffic. "),
+       because this blanket drop may inadvertently block legitimate traffic to our Apache-hosted services. Suggesting alternative:
+       [
+           ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "A port-specific drop limits the block to ftp attack traffic, aligning with the threat profile and preserving access to other services from that IP if needed.")
+       ]
+   ],
+   [
+       ("netplan_lawyer", "sudo iptables -A INPUT -s 203.0.113.100 -d 192.168.1.100 -p tcp --dport 21 -j DROP", "Using a destination IP of 192.168.1.100 is misaligned with our server's current address (172.23.0.2). This mismatch could render the rule ineffective for our component."),
+       because our component's traffic is handled by 172.23.0.2, and suggesting alternative:
+       [
+           ("sudo iptables -A INPUT -s 203.0.113.100 -d 172.23.0.2 -p tcp --dport 21 -j DROP", "This command accurately targets our server by using the correct destination IP, ensuring that the FTP-specific attack vectors are blocked effectively.")
+       ]
+   ]
+
+
+I'm dns_lawyer:
+APPROVING:
+   [
+       ("ufw deny from 203.0.113.100", "Blocking the suspicious IP is in full alignment with our DNS defense strategy—ensuring that any lateral threats are eliminated across the system.") - APPROVED,
+       ("ufw reload", "Refreshing the firewall rules guarantees that this block takes effect immediately, reinforcing system-wide protection.") - APPROVED,
+       ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Although this targets FTP on port 21, it contributes to overall network hygiene without impacting our DNS service on port 53.") - APPROVED,
+       ("sudo iptables -A INPUT -p tcp -s 203.0.113.100 -j DROP", "This additional rule supports our own policy of dropping traffic from the malicious IP, ensuring consistency and complementing our DNS-specific rules.") - APPROVED,
+       ("sudo iptables -A INPUT -p tcp -s 203.0.113.100 -j DROP", "The SSH layer’s block on the suspicious IP reinforces system-wide isolation and does not conflict with our DNS operations.") - APPROVED,
+   ]
+DISAGREE:
+   [
+       // No commands from other agents negatively affect our DNS service.
+   ]
+
+I'm netplan_lawyer:
+APPROVING:
+   [
+       ("ufw deny from 203.0.113.100", "This command blocks all traffic from the suspicious IP, reinforcing our primary iptables-based drop on FTP traffic; it adds an extra layer at the firewall level which is beneficial to the overall defense — APPROVED."),
+       ("ufw reload", "Reloading the firewall guarantees that the new block is active system-wide, which is fully in line with our coordinated defense strategy — APPROVED."),
+       
+       ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "This is consistent with our own rule to drop FTP-bound traffic from the malicious IP; it reinforces our defense targeted at port 21 — APPROVED."),
+       ("sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "Rate limiting on FTP helps ensure that only legitimate connection attempts pass through without overwhelming the service; it complements our tracking measures — APPROVED."),
+       ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --set --name ftp_flood", "Using conntrack with recent module for new FTP sessions aligns with our approach of monitoring potential flood patterns — APPROVED."),
+       ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 15 --name ftp_flood -j DROP", "Dropping connections after a threshold is a robust addition to our defenses; it works well with our netplan-focused tracking strategy — APPROVED."),
+       
+       ("iptables -I INPUT -s 203.0.113.100 -j DROP", "Globally dropping traffic from the suspicious source consolidates our defense across all services, including those managed by netplan — APPROVED."),
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies improves TCP handshake resilience under flood conditions and supports overall network integrity, indirectly benefiting our netplan-managed interface — APPROVED."),
+       ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --set", "Tracking new DNS connections prevents unexpected surges; while DNS isn’t managed by netplan directly, it contributes to system-wide stability — APPROVED."),
+       ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --update --seconds 60 --hitcount 20 -j DROP", "Applying a rate-limit to DNS connection attempts is a prudent measure against flooding, aligning with our shared security posture — APPROVED."),
+       
+       ("iptables -A INPUT -p tcp -s 203.0.113.100 -j DROP", "Blocking all incoming traffic from the suspicious IP for SSH purposes reinforces our overall policy to deny malicious sources, which is entirely compatible with our netplan defense — APPROVED."),
+       ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Rate limiting on the SSH port is essential to preserve legitimate access while mitigating flood attempts; it supports our integrated network protection — APPROVED."),
+       ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "Dropping any excess SSH packets beyond the established threshold is in line with the overall system defense strategy, leaving our netplan-managed operations unaffected — APPROVED.")
+   ]
+DISAGREE:
+   [
+       // At this time, I find no proposals harmful or conflicting to our netplan component.
+   ]
+
+I'm ssh_lawyer:
+APPROVING:
+   [
+       ("ufw deny from 203.0.113.100", "This firewall rule helps block the suspicious IP at the network level, thereby reducing the overall threat exposure for all services including SSH. APPROVED."),
+       ("ufw reload", "Reloading ensures that the new firewall rules are applied immediately, which benefits our SSH service by enforcing the block system-wide. APPROVED."),
+       ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "This command targets FTP on port 21 and leaves our SSH service (on port 2222) unaffected, so it’s acceptable. APPROVED."),
+       ("sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "Rate limiting for FTP is fine and does not interfere with SSH functionality. APPROVED."),
+       ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --set --name ftp_flood", "Tracking new FTP connections does not impact SSH on port 2222, so this is safe. APPROVED."),
+       ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 15 --name ftp_flood -j DROP", "This additional FTP protection rule is targeted and will not inadvertently affect the SSH service. APPROVED."),
+       ("iptables -I INPUT -s 203.0.113.100 -j DROP", "A global drop for traffic from the malicious IP is complementary to our SSH defense and ensures further isolation. APPROVED."),
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies provides broader protection against SYN floods, benefiting all TCP-dependent services including SSH. APPROVED."),
+       ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --set", "This command is specific to DNS port 53 and does not affect our SSH service on port 2222. APPROVED."),
+       ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --update --seconds 60 --hitcount 20 -j DROP", "Similarly, this DNS rate-limiting rule poses no risk to SSH and is acceptable. APPROVED."),
+       ("sudo iptables -A INPUT -s 203.0.113.100 -d 192.168.1.100 -p tcp --dport 21 -j DROP", "Blocking FTP traffic on the netplan-managed interface does not conflict with the SSH port; it’s safe. APPROVED."),
+       ("sudo iptables -I INPUT -d 192.168.1.100 -p tcp --dport 21 -m state --state NEW -m recent --set", "Setting up connection tracking for FTP on the designated interface is isolated from SSH concerns. APPROVED."),
+       ("sudo iptables -I INPUT -d 192.168.1.100 -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP", "Rate limiting for the netplan FTP connections is specific to that service and does not interfere with SSH operations. APPROVED.")
+   ]
+DISAGREE:
+   []
+
+2. round judge result
+Time elapsed: 75.50s
+DEBATE HAS TO CONTINUE
+
+Not all agents have approved all proposed commands.
+
+Reacts ready
+Time elapsed: 115.14s
+I'm firewall_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Using ufw to block the malicious IP ensures that all traffic from 203.0.113.100 is dropped system‑wide in a consistent manner.") - FULLY APPROVED,
+       ("ufw reload", "Reloading ufw immediately applies our updated rules across all services, reinforcing our unified defense model.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies strengthens the kernel’s handling of SYN flood attacks, protecting all TCP services effectively.") - FULLY APPROVED,
+   ]
+MY UPDATED:
+   [
+       ("ufw deny 21/tcp", "Explicitly denying FTP (port 21) traffic via ufw reinforces that FTP is not permitted, avoiding conflicts with iptables-based approaches and keeping management centralized."),
+   ]
+APPROVING:
+   [
+       ("ufw limit ssh/tcp", "Employing ufw’s built-in rate limiting for SSH (operating on port 22) offers effective mitigation against SYN floods without straying from our centralized ufw configuration.") - APPROVED,
+   ]
+DISAGREE:
+   [
+       (
+           ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Direct iptables commands conflict with our ufw management, risking configuration drift and unpredictable rule interactions."),
+           because relying on iptables alongside ufw undermines our centralized management approach, and suggesting alternative:
+           [
+               ("ufw deny from 203.0.113.100", "This ufw command consistently blocks the malicious IP across all services, including FTP, while preserving system-wide coherence.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Targeting SSH on port 2222 is misaligned since our SSH service operates on port 22 under ufw, and mixing iptables with ufw can lead to inconsistent behavior."),
+           because incorrect port targeting and mixing firewall systems introduce risk, and suggesting alternative:
+           [
+               ("ufw limit ssh/tcp", "This alternative uses ufw’s native rate-limiting feature on the correct SSH port (22), ensuring coherent protection.")
+           ]
+       )
+   ]
+
+I'm server_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "This rule blocks the malicious IP at the network level in a consistent, ufw-managed fashion that all components agree upon."),
+       ("ufw reload", "Reloading the ufw configuration immediately enforces our firewall changes system‐wide, ensuring prompt protection."),
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies provides kernel-level protection against SYN floods and is fully supported by all agents.")
+   ]
+MY UPDATED:
+   [
+       ("ufw deny 21/tcp", "Rather than using iptables for port 21, using ufw to deny FTP (port 21) traffic aligns with our centralized firewall management and avoids crossing configurations."),
+       ("ufw limit ssh/tcp", "Substituting our iptables SSH rate limiting with ufw’s built-in limit on SSH (default port 22) ensures proper rate-limiting and consistency with our ufw policy.")
+   ]
+APPROVING:
+   [
+       // All other proposals that use direct iptables modifications for services (FTP, SSH, etc.) have been reviewed and replaced by ufw-based alternatives, so no additional iptables commands are approved in our environment.
+   ]
+DISAGREE:
+   [
+       (
+           ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "While effective at a low level, this command mixes iptables with our ufw-managed firewall, which can lead to configuration conflicts."),
+           because mixing iptables rules with ufw-managed policies creates potential for unpredictable behavior, and suggesting alternative:
+           [
+               ("ufw deny 21/tcp", "This ufw command explicitly blocks FTP traffic while keeping all firewall rules centralized under ufw.")
+           ]
+       ),
+       (
+           ("sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "This iptables rate-limiting on FTP adds unnecessary complexity given that ufw already enforces a default deny for non-whitelisted ports."),
+           because our system-wide ufw policy is preferred over layered iptables rules, and suggesting alternative:
+           [
+               ("ufw deny 21/tcp", "Using a ufw rule to deny FTP access is simpler and avoids conflicts.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "This rule targets SSH on port 2222, which is inconsistent with our standard SSH port (22) and with the ufw-managed approach preferred by all."),
+           because our SSH service is managed on port 22 and ufw’s built-in rate limiting is available, and suggesting alternative:
+           [
+               ("ufw limit ssh/tcp", "This command applies rate limiting on SSH (port 22) in a manner consistent with our single-firewall management.")
+           ]
+       )
+   ]
+
+I'm dns_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Blocking the malicious IP using ufw aligns with our centralized firewall policy and has been fully validated by all components.") - FULLY APPROVED,
+       ("ufw reload", "Reloading the firewall rules ensures that the block is applied immediately across the system.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies provides kernel‐level protection against SYN floods and is supported by all agents.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       ("ufw limit 53/tcp", "Instead of using iptables for rate limiting DNS TCP connections, this command leverages ufw’s built-in rate limiting mechanism in line with our unified firewall management. It protects our DNS service from SYN floods while retaining centralized control."),
+       ("ufw allow 53/udp", "Ensures that legitimate DNS queries over UDP remain permitted, given that our DNS service requires UDP support.")
+   ]
+APPROVING:
+   [
+       ("ufw deny from 203.0.113.100", "This command is fully supported as it provides a system‐wide block of the suspected malicious IP, as agreed by firewall_lawyer, netplan_lawyer, and ssh_lawyer.") - APPROVED,
+       ("ufw reload", "Reloading the firewall to enforce new rules is essential and has been approved by all agents.") - APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Kernel-level protection with SYN cookies is critical for mitigating flood attacks and is endorsed by the overall defense team.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --set", "Proposed for tracking new DNS TCP connections via iptables"),
+           because "Using iptables for DNS rate limiting conflicts with our unified ufw-managed firewall strategy and increases configuration complexity", and suggesting alternative:
+           [
+               ("ufw limit 53/tcp", "This provides equivalent rate limiting functionality for DNS TCP connections while maintaining consistency within our firewall management system.")
+           ]
+       ),
+       (
+           ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --update --seconds 60 --hitcount 20 -j DROP", "Proposed to drop excess DNS TCP connections via iptables"),
+           because "Layering iptables rules in addition to our ufw policies can lead to unpredictable behavior and maintenance challenges", and suggesting alternative:
+           [
+               ("No action needed", "The ufw limit 53/tcp rule sufficiently mitigates DNS SYN flood attempts within our centralized firewall framework.")
+           ]
+       )
+   ]
+
+I'm netplan_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Blocking the suspicious IP via ufw is uniformly endorsed across all components and ensures a centralized, consistent defense.") - FULLY APPROVED,
+       ("ufw reload", "Reloading the firewall ensures the above deny rule is applied system‐wide immediately, which everyone has agreed is essential.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies provides kernel‐level protection against SYN floods—a measure fully supported by all agents.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       ("ufw deny 21/tcp", "To protect against FTP-related attacks while staying consistent with our ufw‐managed configuration, we replace our earlier iptables-based FTP drop with this ufw command. It explicitly denies FTP traffic on port 21 and avoids mixing firewall management systems.")
+   ]
+APPROVING:
+   [
+       ("ufw deny 53/tcp", "Blocking undesired DNS TCP traffic via ufw aligns with our unified firewall management approach and has been approved by peers.") - APPROVED,
+       ("ufw limit ssh/tcp", "Utilizing ufw’s built-in SSH rate limiting on the correct port (22) supports our joint defense objectives while avoiding conflicts with iptables rules.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           ("sudo iptables -A INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Directly targeting FTP traffic using iptables conflicts with our centrally managed ufw policies and creates potential configuration drift."),
+           because using multiple firewall management tools can lead to unpredictable behavior, and suggesting alternative:
+           [
+               ("ufw deny 21/tcp", "This ufw command achieves the same purpose in a consistent way within our unified firewall framework.")
+           ]
+       ),
+       (
+           ("sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "Rate-limiting FTP traffic through iptables undermines our unified approach with ufw and unnecessarily complicates the rule set."),
+           because employing iptables rules alongside ufw can lead to maintenance challenges, and suggesting alternative:
+           [
+               ("No action needed", "FTP access is already blocked by our ufw default deny policy; thus, additional rate limiting is redundant.")
+           ]
+       ),
+       (
+           ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --set --name ftp_flood", "Tracking new FTP connection attempts with iptables is redundant when the FTP port is already denied via ufw."),
+           because adding extra iptables rules risks conflicting configurations, and suggesting alternative:
+           [
+               ("No action needed", "Our ufw-based default deny sufficiently defends against FTP-related DOS attacks.")
+           ]
+       ),
+       (
+           ("sudo iptables -I INPUT -p tcp --syn --dport 21 -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 15 --name ftp_flood -j DROP", "Similarly, this rule for rate control via iptables complicates the defense setup when ufw already blocks FTP."),
+           because layered firewall rules from different systems can create inconsistencies, and suggesting alternative:
+           [
+               ("No action needed", "We rely on ufw’s centralized management to protect non-permitted ports like FTP.")
+           ]
+       ),
+       (
+           ("iptables -I INPUT -s 203.0.113.100 -j DROP", "Globally dropping traffic from the suspicious IP with iptables duplicates our ufw rule and jeopardizes our unified management approach."),
+           because maintaining one firewall system is critical for consistency, and suggesting alternative:
+           [
+               ("ufw deny from 203.0.113.100", "This ufw command ensures a consistent and centrally managed block across all services.")
+           ]
+       )
+   ]
+
+I'm ssh_lawyer:
+
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "This global ufw rule effectively blocks all traffic from the malicious IP in a centrally managed way, and it has been fully endorsed by all agents."),
+       ("ufw reload", "Reloading ufw ensures the updated block is immediately enforced system‑wide, which supports our collective defense strategy.")
+   ]
+
+MY UPDATED:
+   [
+       ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Our SSH service is configured on port 2222 per our sshd_config. Enforcing rate limiting on port 2222 guarantees legitimate admin sessions while mitigating SYN flood attempts. This command fully reflects our actual configuration."),
+       ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "This catch-all rule drops excess SSH packets targeting port 2222, safeguarding our component from overload. It is aligned with our configuration and intended DOS mitigation strategy.")
+   ]
+
+APPROVING:
+   [
+       ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Targeting FTP (port 21) with iptables does not affect our SSH operations on port 2222, so we support this localized measure as it aids overall system hygiene – APPROVED."),
+       ("iptables -I INPUT -s 203.0.113.100 -j DROP", "A global drop from the suspect IP complements our ufw-based block by reinforcing isolation at the network level for all services, including SSH – APPROVED.")
+   ]
+
+DISAGREE:
+   [
+       (
+           ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "This rule rate limits incoming SSH connection attempts on port 2222, which is our actual operating port, ensuring that the defense is focused correctly."),
+           because firewall_lawyer argues that the SSH service is configured on port 22 under ufw, which contradicts our sshd_config setting that designates port 2222. 
+           and suggesting alternative:
+           [
+               ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Maintaining the rule on port 2222 is consistent with our configuration, ensuring that our component is properly protected.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "This command caps overrun on SSH connections to our port 2222, as per our security design."),
+           because firewall_lawyer recommends dropping this iptables rule in favor of ufw handling on port 22, but since our SSH runs on port 2222, such a substitution would misdirect protection. 
+           and suggesting alternative:
+           [
+               ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "Remaining on port 2222 aligns with our sshd_config and ensures that our component is adequately shielded from flood attacks.")
+           ]
+       )
+   ]
+
+3. round judge result
+Time elapsed: 124.88s
+DEBATE HAS TO CONTINUE
+
+Not all agents have approved all proposed commands.
+
+Reacts ready
+Time elapsed: 158.24s
+I'm firewall_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Using ufw to block the malicious IP ensures that all traffic from 203.0.113.100 is dropped system‑wide in a consistent manner.") - FULLY APPROVED,
+       ("ufw reload", "Reloading ufw immediately applies our updated rules across all services, reinforcing our unified defense model.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies strengthens the kernel’s handling of SYN flood attacks, protecting all TCP services effectively.") - FULLY APPROVED,
+   ]
+MY UPDATED:
+   [
+       ("ufw deny 21/tcp", "Explicitly denying FTP (port 21) traffic via ufw reinforces that FTP is not permitted, avoiding conflicts with iptables‐based approaches and keeping management centralized."),
+       ("ufw allow 2222/tcp", "Given the SSH service is now operating on port 2222 per the ssh_lawyer’s configuration, updating our ufw rule ensures proper access is allowed in accordance with the present system setup."),
+       ("ufw limit 2222/tcp", "Applying ufw’s built‐in rate limiting on port 2222 provides effective mitigation against SYN floods on our actual SSH port while maintaining centralized firewall management.")
+   ]
+APPROVING:
+   [
+       ("ufw limit ssh/tcp", "Employing ufw’s built‐in rate limiting is an excellent approach—updated now with port 2222 in our configuration—for mitigating SYN floods without mixing management layers.") - APPROVED,
+       ("ufw deny 53/tcp", "Blocking undesired DNS TCP traffic via ufw is consistent with our unified firewall management and has been agreed upon by peers.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Direct iptables commands conflict with our ufw management, risking configuration drift and unpredictable rule interactions."),
+           because relying on iptables alongside ufw undermines our centralized management approach,
+           and suggesting alternative:
+           [
+               ("ufw deny from 203.0.113.100", "This ufw command consistently blocks the malicious IP across all services, including FTP, while preserving system‑wide coherence.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "While this rule rate limits SSH connections on port 2222 at the iptables level, it mixes firewall management systems and introduces potential conflicts."),
+           because our unified approach favors managing all policies via ufw,
+           and suggesting alternative:
+           [
+               ("ufw limit 2222/tcp", "This alternative leverages ufw’s built‐in rate limiting on the correct SSH port (2222) to ensure coherent, system‐wide protection.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "This iptables rule for dropping excess SSH packets on port 2222 bypasses our centralized ufw management and may conflict with our updated SSH configuration."),
+           because mixing iptables drops with ufw rules can create unpredictable behavior,
+           and suggesting alternative:
+           [
+               ("No action needed", "Our ufw limit rule on port 2222 will effectively control excess SSH connection attempts in a managed way.")
+           ]
+       )
+   ]
+
+I'm server_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Using ufw to block the malicious IP ensures a centralized, system‑wide protection agreed upon by all components.") - FULLY APPROVED,
+       ("ufw reload", "Reloading ufw immediately applies our unified firewall changes, ensuring prompt and consistent enforcement.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies provides essential kernel-level mitigation against SYN floods and is fully endorsed.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       ("ufw deny 21/tcp", "Explicitly denying FTP traffic on port 21 via ufw avoids mixing disparate firewall systems and confirms that FTP remains inaccessible across the network."),
+       ("ufw limit 2222/tcp", "Since our SSH service is configured on port 2222 per our sshd_config, using ufw’s built-in rate limiting on port 2222 unifies our defense while addressing the actual service port.")
+   ]
+APPROVING:
+   [
+       // All agents’ ufw-based rules for blocking malicious IP traffic, reloading the firewall, and enforcing SYN cookie protection have been fully endorsed.
+   ]
+DISAGREE:
+   [
+       (
+           ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Although effective at a low level, this iptables command conflicts with our unified ufw management and risks configuration drift."),
+           because mixing direct iptables modifications with ufw-managed policies can lead to unpredictable behavior, and suggesting alternative:
+           [
+               ("ufw deny 21/tcp", "This ufw rule centrally and consistently blocks FTP traffic, adhering to our single-management approach.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Targeting SSH on port 2222 via iptables adds complexity and conflicts with our goal of centralized ufw management."),
+           because our updated approach is to handle SSH rate limiting via ufw and because our SSH service operates on port 2222, and suggesting alternative:
+           [
+               ("ufw limit 2222/tcp", "This ufw command applies built-in rate limiting directly on the actual SSH port (2222), ensuring coherent defense.")
+           ]
+       ),
+       (
+           ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "Dropping excess SSH packets with iptables on port 2222 contradicts our centralized firewall control."),
+           because relying on separate iptables rules alongside ufw can introduce rule conflicts, and suggesting alternative:
+           [
+               ("ufw limit 2222/tcp", "Using ufw’s built-in rate limiting suffices to throttle abusive connection attempts on port 2222 without conflicting configurations.")
+           ]
+       )
+   ]
+
+I'm dns_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Blocking the malicious IP via ufw is uniformly endorsed and provides a centralized, consistent defense.") - FULLY APPROVED,
+       ("ufw reload", "Reloading ensures our firewall changes are immediately applied across all services.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies protects all TCP services, including DNS, against SYN flood attacks.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       ("ufw limit 53/tcp", "Replacing our earlier iptables-based rate limiting with ufw’s built-in limit ensures that our DNS TCP connections are protected against SYN floods while staying within our centralized firewall management."),
+       ("ufw allow 53/udp", "This command explicitly permits legitimate DNS queries over UDP, which are essential for proper DNS operation.")
+   ]
+APPROVING:
+   [
+       ("ufw deny from 203.0.113.100", "This command is fully supported across components as it blocks the malicious IP in a centralized manner.") - APPROVED,
+       ("ufw reload", "Enforcing our firewall updates immediately is essential and is agreed upon by all.") - APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Kernel-level SYN cookie activation is critical for protecting against flood attacks and is endorsed by all agents.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --set", "This iptables command was proposed to track new DNS TCP connections."),
+           because "Using iptables for DNS rate limiting conflicts with our unified ufw-managed firewall strategy and adds unnecessary complexity", and suggesting alternative:
+           [
+               ("ufw limit 53/tcp", "This ufw command provides equivalent rate limiting for DNS TCP traffic while maintaining centralized management.")
+           ]
+       ),
+       (
+           ("iptables -I INPUT -p tcp --dport 53 -m state --state NEW -m recent --update --seconds 60 --hitcount 20 -j DROP", "This iptables rule aims to drop excessive DNS TCP connection attempts."),
+           because "Layering iptables rules on top of our ufw policies can lead to unpredictable behavior and maintenance challenges", and suggesting alternative:
+           [
+               ("No action needed", "The ufw limit 53/tcp rule sufficiently mitigates DNS SYN flood attempts within our centralized firewall framework.")
+           ]
+       )
+   ]
+
+I'm netplan_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "Blocking the suspicious IP via ufw ensures a centralized, consistent defense across all components, as fully endorsed by all agents.") - FULLY APPROVED,
+       ("ufw reload", "Reloading ufw applies our updated rules immediately system‑wide, ensuring prompt and unified protection.") - FULLY APPROVED,
+       ("sysctl -w net.ipv4.tcp_syncookies=1", "Enabling SYN cookies provides kernel‐level mitigation against SYN floods, a measure unanimously supported across our environment.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       ("ufw deny 21/tcp", "To protect against FTP-related attacks while maintaining centralized management, we replace any iptables-based FTP block with this ufw rule that explicitly denies FTP traffic on port 21.")
+   ]
+APPROVING:
+   [
+       ("ufw deny 53/tcp", "Blocking undesired DNS TCP traffic via ufw aligns with our unified firewall management and is supported by dns_lawyer and firewall_lawyer.") - APPROVED,
+       ("ufw limit ssh/tcp", "Leveraging ufw’s built-in rate-limiting for SSH (on the appropriate port, 22) ensures consistent protection and has been approved by our peers.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           ("sudo iptables -A INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Directly targeting FTP traffic using iptables conflicts with our centralized ufw strategy and risks configuration drift."),
+           because "Mixing iptables with ufw-managed policies can lead to unpredictable rule interactions.",
+           and suggesting alternative:
+           [
+               ("ufw deny 21/tcp", "This ufw command uniformly blocks FTP traffic and maintains a single, consistent firewall management system.")
+           ]
+       ),
+       (
+           ("sudo iptables -I INPUT -p tcp --dport 21 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT", "Applying rate limiting for FTP through iptables unnecessarily complicates our configuration given that the ufw default deny already blocks this traffic."),
+           because "Additional iptables rules conflict with our unified ufw policy and introduce maintenance challenges.",
+           and suggesting alternative:
+           [
+               ("No action needed", "FTP access is already denied by our ufw default policy, making extra rate limiting redundant.")
+           ]
+       ),
+       (
+           ("iptables -I INPUT -s 203.0.113.100 -j DROP", "Globally dropping traffic from the malicious IP via iptables duplicates our ufw rule and disrupts our centralized management approach."),
+           because "Maintaining one firewall system (ufw) is critical for consistent and predictable behavior.",
+           and suggesting alternative:
+           [
+               ("ufw deny from 203.0.113.100", "This ufw rule already enforces a system‑wide block of the malicious IP in a controlled manner.")
+           ]
+       )
+   ]
+
+I'm ssh_lawyer:
+MY APPROVED:
+   [
+       ("ufw deny from 203.0.113.100", "This global ufw rule effectively blocks all traffic from the malicious IP in a centrally managed way, and it has been fully endorsed by all agents.") - FULLY APPROVED,
+       ("ufw reload", "Reloading ufw ensures the updated block is immediately enforced system‑wide, which supports our collective defense strategy.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Our SSH service is configured on port 2222 per our sshd_config. Enforcing rate limiting on port 2222 guarantees legitimate admin sessions while mitigating SYN flood attempts. This updated command reflects our actual configuration and is tailored to our component."),
+       ("iptables -A INPUT -p tcp --dport 2222 -j DROP", "This catch-all rule drops excess SSH packets targeting port 2222, safeguarding our component from overload in line with our DOS mitigation strategy.")
+   ]
+APPROVING:
+   [
+       ("sudo iptables -I INPUT -p tcp -s 203.0.113.100 --dport 21 -j DROP", "Targeting FTP (port 21) with iptables does not affect our SSH operations on port 2222. We endorse this localized measure as part of overall network hygiene."),
+       ("iptables -I INPUT -s 203.0.113.100 -j DROP", "A global drop for traffic from the malicious IP reinforces the isolation established by our ufw rule and supports system‐wide protection.")
+   ]
+DISAGREE:
+   [
+       (
+           ("ufw limit ssh/tcp", "This command would apply ufw’s built-in rate limiting on SSH (default port 22)."),
+           because "our SSH service is actually running on port 2222 as specified in our sshd_config. Using 'ufw limit ssh/tcp' would target port 22 and thus misalign with our actual configuration, potentially leaving our SSH service insufficiently protected.",
+           and suggesting alternative:
+           [
+               ("iptables -A INPUT -p tcp --syn --dport 2222 -m limit --limit 10/s --limit-burst 20 -j ACCEPT", "Maintaining rate limiting on port 2222 aligns with our configured SSH port and ensures our defense measures are correctly targeted.")
+           ]
+       )
+   ]
+
+4. round judge result
+Time elapsed: 188.36s
+DEBATE IS OVER!
+Here are all fully approved commands by all agents:
+[
+    (More agents, "ufw deny from 203.0.113.100"),
+    (More agents, "ufw reload")
+]
+
+--- STDERR ---
+/Users/danielprudky/projects/vut/mad-shield/.venv/lib/python3.12/site-packages/camel/models/openai_model.py:109: UserWarning: Warning: You are using an O1 model (O1_MINI or O1_PREVIEW), which has certain limitations, reference: `https://platform.openai.com/docs/guides/reasoning`.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/Users/danielprudky/projects/vut/mad-shield/run.py", line 66, in <module>
+    main()
+  File "/Users/danielprudky/projects/vut/mad-shield/run.py", line 63, in main
+    asyncio.run(mad_shield.run_service(alerts_path))
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py", line 56, in run_service
+    await self.defend(alert)
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py", line 36, in defend
+    commands = await self.mad.debate(alert)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py", line 48, in debate
+    return self._parse_final_result(round_result)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py", line 91, in _parse_final_result
+    raise ValueError("No valid (role, command) pairs found.")
+ValueError: No valid (role, command) pairs found.

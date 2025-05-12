@@ -1,140 +1,80 @@
 import time
-import ast
+import re
 
-from typing import List
+from typing import List, Tuple
 from typing import TYPE_CHECKING
 
-from camel.tasks.task import Task
-
 from .agents import *
-from .agents.summarizer import SummarizerAgent
-from mad_shield.mad.tasks.tasks import *
-from .workforce import Workforce
+from ..app_config import app_config
 from ..command import Command
 
 if TYPE_CHECKING:
-    from mad_shield.agents.componentAgent import ComponentAgent
+    from ..agents.component_agent import ComponentAgent
 
 
 class MultiAgentDebate:
-    def __init__(self, components: List["ComponentAgent"], max_rounds: int = 5) -> None:
-        self.max_rounds = max_rounds
+    def __init__(self, components: List["ComponentAgent"]) -> None:
         self.components = components
-
-        self.lawyers: List[LawyerAgent] = []
-        self.summarizer = None
-        self.judge = None
-        self.workforce = None
-
-    def load_agents(self):
-        for component in self.components:
-            self.lawyers.append(component.hire_lawyer(self))
-
-        self.summarizer = SummarizerAgent(self)
+        self.lawyers = [component.hire_lawyer(self) for component in self.components]
         self.judge = JudgeAgent(self)
-
-    def load_workforce(self):
-        self.workforce = Workforce(
-            description="Multiagent debate shield"
-        )
-
-        for lawyer in self.lawyers:
-            self.workforce.add_single_agent_worker(
-                description=lawyer.role + " is component agent defending his component",
-                worker=lawyer,
-            )
-
-        self.workforce.add_single_agent_worker(
-            description="summarizer agent to condense and extract proposals from each debate round",
-            worker=self.summarizer,
-        )
-
-        self.workforce.add_single_agent_worker(
-            description="judge agent to decide if debate is over on end of each debate round",
-            worker=self.judge,
-        )
-
-        self.workforce.load_children_data()
 
     def get_components_in_str(self) -> str:
         return ", ".join(component.name for component in self.components)
 
-    def debate(self, alert: str) -> List[Command]:
-        start = time.time()
+    async def debate(self, alert: str) -> List[Command]:
 
+        if app_config().debug:
+            start_time = time.time()
+            self._log(f"Max rounds: {app_config().max_debate_rounds}", 0.0, "")
+        else:
+            start_time = None
+
+        proposals = await self._get_initial_proposals(alert, start_time)
         round_result = ""
 
-        debate_round = 1
-        is_consensus = False
+        for round_number in range(2, app_config().max_debate_rounds + 1):
+            proposals = await self._get_reacts_to_proposals(
+                proposals, round_number, start_time
+            )
 
-        print("Max rounds: " + str(self.max_rounds))
+            round_result = self.judge.judge_debate(
+                proposals, is_last_round=(round_number == app_config().max_debate_rounds)
+            )
 
-        while not is_consensus and debate_round <= self.max_rounds:
-            round_tasks: List[Task] = self.load_tasks(debate_round, alert)
-            round_tasks = self._extend_lawyers_tasks(round_tasks)
+            if app_config().debug:
+                self._log_result(round_number, start_time, round_result)
 
-            print(f"Having {len(round_tasks)} tasks for round {debate_round}")
+            if "OVER" in round_result:
+                return self._parse_final_result(round_result)
 
-            tasks = self.workforce.process_tasks(round_tasks)
+        # If we exit loop without consensus
+        return self._parse_final_result(round_result)
 
-            if debate_round <= 1:
-                debate_round += 1
-                continue
+    async def _get_initial_proposals(self, alert: str, start_time: float|None) -> str:
+        proposals = await self.judge.get_proposals(alert)
+        result = self._format_proposals(proposals)
 
-            round_result_task: Task = [task for task in tasks if self.workforce.get_task_assignee(task) == self.workforce.get_judge()][0]
-            round_result = round_result_task.result
+        if app_config().debug:
+            self._log("Proposals ready", start_time, result)
+        return result
 
-            is_consensus = True if "OVER" in round_result else False
-
-            debate_round += 1
-
-        print(f"\nDebating tasks: {time.time() - start} seconds")
-
-        return self.parse_debate_result(round_result)
-
-    def load_tasks(self, debate_round: int, alert: str) -> List[Task]:
-        lawyers_task = TASK_LAWYER_PROPOSE if debate_round <= 1 else TASK_LAWYER_CRITICIZE
-        summarizer_task = TASK_SUMMARIZE
-        coordinator_task = TASK_JUDGE_DEBATE if debate_round < self.max_rounds else TASK_END_DEBATE
-
-        if debate_round <= 1:
-            lawyers_task.additional_info = f"Incoming alert: {alert}"
-            summarizer_task.content = summarizer_task.content.format(debate_round='FIRST')
+    async def _get_reacts_to_proposals(
+        self, proposals: str, round_number: int, start_time: float|None
+    ) -> str:
+        if round_number == 2:
+            new_proposals = await self.judge.get_reacts(proposals)
         else:
-            summarizer_task.content = summarizer_task.content.format(debate_round='HIGHER')
+            new_proposals = await self.judge.get_reacts_and_corrections(proposals)
+        result = self._format_proposals(new_proposals)
 
-        lawyers_task.id = f"{debate_round}.1"
+        if app_config().debug:
+            self._log("Reacts ready", start_time, result)
 
-        summarizer_task.id = f"{debate_round}.2"
+        return result
 
-        coordinator_task.id = f"{debate_round}.3"
-
-        return [lawyers_task, summarizer_task] if debate_round <= 1 else [lawyers_task, summarizer_task, coordinator_task]
-
-    def _extend_lawyers_tasks(self, tasks: List[Task]) -> List[Task]:
-        lawyer_tasks = [task for task in tasks if task.type == "Lawyer"]
-        for task in lawyer_tasks:
-            task_index = tasks.index(task)
-            tasks.remove(task)
-
-            for assignee in self.workforce.get_lawyers():
-                lawyer_task = task.model_copy()
-                lawyer_task.id = task.id + "." + assignee.node_id
-                tasks.insert(task_index, lawyer_task)
-                task_index += 1
-        return tasks
-
-    def parse_debate_result(self, debate_result: str) -> list[Command]:
-        """
-        Parses the debate result and returns a list of Command objects.
-
-        Args:
-            debate_result (str): The debate output containing approved suggestions.
-
-        Returns:
-            list[Command]: A list of parsed commands assigned to their respective agents.
-        """
+    def _parse_final_result(self, debate_result: str) -> List[Command]:
         commands_list = []
+
         start = debate_result.find("[")
         end = debate_result.rfind("]")
 
@@ -142,19 +82,60 @@ class MultiAgentDebate:
             raise ValueError("Invalid debate result format.")
 
         cleaned_result = debate_result[start:end + 1]
-        for lawyer in self.lawyers:
-            cleaned_result = cleaned_result.replace(lawyer.role, f"'{lawyer.role}'")
 
-        try:
-            approved_commands = ast.literal_eval(cleaned_result)
-        except (SyntaxError, ValueError) as e:
-            raise ValueError(f"Error parsing debate result: {e}")
+        pattern = re.compile(r"\(\s*([a-zA-Z0-9_]+)\s*,\s*(.*?)\s*\)")
+        matches = pattern.findall(cleaned_result)
 
-        for agent_name, command in approved_commands:
-            lawyer_candidates = [agent for agent in self.lawyers if agent.role == agent_name]
-            if len(lawyer_candidates) >= 1:
-                commands_list.append(Command(lawyer_candidates[0].component, command))
+        if not matches:
+            raise ValueError("No valid (role, command) pairs found.")
+
+        for role, command in matches:
+
+            if role.lower() == "more agents":
+                component = self.lawyers[0].component
             else:
-                raise ValueError(f"Unknown agent: {agent_name}")
+                matched_lawyers = [
+                    agent for agent in self.lawyers
+                    if agent.component.name in role
+                ]
 
-        return commands_list
+                if not matched_lawyers:
+                    raise ValueError(f"Unknown agent role: {role}")
+                component = matched_lawyers[0].component
+
+            commands_list.append(Command(component, command))
+
+        return self._normalize_commands(commands_list)
+
+    @staticmethod
+    def _normalize_commands(commands: List[Command]) -> List[Command]:
+        seen = set()
+        unique_commands = []
+
+        for cmd in commands:
+            normalized = cmd.command.strip()
+            if normalized.startswith("sudo "):
+                normalized = normalized[5:].strip()
+
+            if normalized not in seen:
+                seen.add(normalized)
+                unique_commands.append(Command(cmd.component, normalized))
+
+        return unique_commands
+
+    @staticmethod
+    def _format_proposals(proposals: List[Tuple[str, str]]) -> str:
+        return "\n\n".join(proposal for _, proposal in proposals)
+
+    @staticmethod
+    def _log(message: str, start_time: float | None, content: str) -> None:
+        print(f"\n{message}")
+        if start_time:
+            print(f"Time elapsed: {time.time() - start_time:.2f}s")
+        if content:
+            print(content)
+
+    def _log_result(
+        self, round_number: int, start_time: float | None, result: str
+    ) -> None:
+        self._log(f"{round_number}. round judge result", start_time, result)

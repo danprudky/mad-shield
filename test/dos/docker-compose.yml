@@ -1,0 +1,32 @@
+services:
+  defender:
+    build:
+      context: ../../..
+      dockerfile: mad-shield/test/dos/defender/Dockerfile
+    container_name: dos_defender
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    volumes:
+      - suri_logs:/var/log/suricata
+    restart: unless-stopped
+    networks:
+      - dosnet
+
+  attacker:
+    build:
+      context: ../../..
+      dockerfile: mad-shield/test/dos/attacker/Dockerfile
+    container_name: dos_attacker
+    depends_on:
+      - defender
+    restart: "no"
+    networks:
+      - dosnet
+
+networks:
+  dosnet:
+    driver: bridge
+
+volumes:
+  suri_logs:

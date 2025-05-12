@@ -1,0 +1,545 @@
+MadShield running in passive mode. Waiting for alerts...
+Alert 203.0.113.100_TCP_5_to_server loaded
+
+Max rounds: 4
+
+Proposals ready
+Time elapsed: 8.61s
+I'm firewall_lawyer and suggesting these proposals:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is commonly used for FTP. This is crucial to prevent potential Denial of Service (DoS) attacks targeting this service."),
+       (ufw limit ssh, "This command limits the number of SSH connection attempts from a single IP address, which can help mitigate brute-force attacks and reduce the risk of unauthorized access."),
+       (ufw logging on, "Enabling logging will help monitor incoming and outgoing traffic, allowing for better analysis of potential threats and quicker response to suspicious activities."),
+       (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited."),
+       (ufw deny incoming, "Reinforcing the default deny rule ensures that any new incoming connections that are not explicitly allowed will be blocked, providing an additional layer of security.")
+   ]
+
+I'm server_lawyer and suggesting these proposals:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which is commonly used for FTP. This helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server."),
+
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command sets up a recent list for new connections on port 21. It helps to track the number of connection attempts from a single IP address, which can be useful for identifying and mitigating potential DoS attacks."),
+
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks."),
+
+       (sudo systemctl restart apache2, "Restarting the Apache server can help to clear any potential resource exhaustion caused by the attack and ensure that the server is running optimally after implementing the firewall rules.")
+   ]
+
+I'm dns_lawyer and suggesting these proposals:
+   [
+       (iptables -A INPUT -p tcp --dport 53 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting the DNS port (53), mitigating the risk of a potential DoS attack on the DNS service."),
+       
+       (iptables -A INPUT -p tcp --dport 53 -m state --state INVALID -j DROP, "This command drops any invalid packets targeting the DNS port, which can help prevent malformed packets from overwhelming the DNS service."),
+       
+       (iptables -A INPUT -p tcp --dport 53 -m limit --limit 10/minute --limit-burst 20 -j ACCEPT, "This command limits the rate of incoming connections to the DNS service, allowing only a certain number of requests per minute to help mitigate the risk of a SYN flood attack."),
+       
+       (systemctl restart named, "This command restarts the DNS service to ensure that any potential issues caused by the attack are cleared and the service is running fresh."),
+       
+       (journalctl -u named --since "1 hour ago", "This command checks the logs of the DNS service for any unusual activity in the last hour, allowing for monitoring and further investigation of the attack.")
+   ]
+
+I'm netplan_lawyer and suggesting these proposals:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, effectively mitigating the risk of a potential DoS attack on the server."),
+
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command tracks new connections to port 21 and adds them to a recent list, which can be used to limit the rate of incoming connections, helping to prevent SYN flood attacks."),
+
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts to port 21 if there are more than 10 attempts from the same IP within 60 seconds, which helps to mitigate the risk of SYN flood attacks."),
+
+       (sudo systemctl restart systemd-networkd, "This command restarts the networkd service to ensure that any changes made to the network configuration are applied immediately, maintaining the integrity of the netplan configuration.")
+   ]
+
+I'm ssh_lawyer and suggesting these proposals:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 2222 -j ACCEPT, "This command allows incoming SSH connections only on the specified port (2222), ensuring that only legitimate traffic is processed by the SSH service, while blocking other ports that may be targeted by attackers."),
+
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "Since the alert indicates a potential DoS attack on port 21, this command drops all incoming traffic to that port, mitigating the risk of a flood attack that could affect the overall system performance."),
+
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "This command blocks any traffic from the suspicious source IP (203.0.113.100) identified in the threat alert, preventing any further attempts to exploit vulnerabilities in the system."),
+
+       (sudo systemctl restart sshd, "Restarting the SSH daemon ensures that any changes made to the configuration (like the port change or user restrictions) are applied immediately, enhancing the security posture of the SSH service."),
+
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.")
+   ]
+
+Reacts ready
+Time elapsed: 19.88s
+I'm firewall_lawyer:
+APPROVING:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which is commonly used for FTP. This helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "Since the alert indicates a potential DoS attack on port 21, this command drops all incoming traffic to that port, mitigating the risk of a flood attack that could affect the overall system performance.") - APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (server_lawyer, (sudo systemctl restart apache2), "Restarting the Apache server can help to clear any potential resource exhaustion caused by the attack and ensure that the server is running optimally after implementing the firewall rules."),
+       because while restarting the server may help in some cases, it does not directly address the ongoing threat of the DoS attack and could lead to unnecessary downtime. Instead, I suggest focusing on strengthening the firewall rules to prevent the attack in the first place:
+       [
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited."),
+       ]
+   ]
+
+I'm server_lawyer:
+APPROVING:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good practice to mitigate brute-force attacks and enhance security.") - APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - APPROVED,
+       (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command is effective in dropping incoming TCP packets from the suspicious source IP targeting port 21, which is crucial for mitigating the risk of a potential DoS attack.") - APPROVED,
+       (sudo systemctl restart apache2, "Restarting the Apache server is a good step to clear any potential resource exhaustion caused by the attack and ensure optimal server performance.") - APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "Blocking any traffic from the suspicious source IP is a necessary measure to prevent further attempts to exploit vulnerabilities.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (ssh_lawyer, (sudo iptables -A INPUT -p tcp --dport 2222 -j ACCEPT), "While allowing SSH connections on a specific port is a good practice, it does not directly address the current threat to port 21 and may lead to confusion if not properly documented."),
+       because it does not contribute to the immediate defense against the DoS threat on port 21, and suggesting alternative:
+       [
+           (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "This command drops all incoming traffic to port 21, which is necessary given the current threat alert and helps to mitigate the risk of a flood attack.")
+       ]
+   ]
+
+I'm dns_lawyer:
+APPROVING:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is crucial to prevent potential Denial of Service (DoS) attacks targeting this service.") - APPROVED,
+       (ufw limit ssh, "This command limits the number of SSH connection attempts from a single IP address, which can help mitigate brute-force attacks and reduce the risk of unauthorized access.") - APPROVED,
+       (ufw logging on, "Enabling logging will help monitor incoming and outgoing traffic, allowing for better analysis of potential threats and quicker response to suspicious activities.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command sets up a recent list for new connections on port 21. It helps to track the number of connection attempts from a single IP address, which can be useful for identifying and mitigating potential DoS attacks.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "This command blocks any traffic from the suspicious source IP (203.0.113.100) identified in the threat alert, preventing any further attempts to exploit vulnerabilities in the system.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (server_lawyer, (sudo systemctl restart apache2), "Restarting the Apache server is not relevant to the DNS component and could disrupt services that rely on it."),
+       because it does not address the DNS service directly, and suggesting alternative:
+       [
+           (systemctl restart named, "This command restarts the DNS service to ensure that any potential issues caused by the attack are cleared and the service is running fresh.")
+       ]
+   ]
+
+I'm netplan_lawyer:
+APPROVING:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is crucial to prevent potential Denial of Service (DoS) attacks targeting this service.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds, which is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (firewall_lawyer, (ufw deny from any to any port 21), "This command blocks all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+       because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+       [
+           (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+       ]
+   ]
+
+I'm ssh_lawyer:
+APPROVING:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting that service.") - APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good strategy to mitigate brute-force attacks, which is beneficial for the security of the SSH service.") - APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops incoming TCP packets from the suspicious source IP targeting port 21, which is essential for mitigating the risk of a potential DoS attack.") - APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command helps limit the impact of SYN flood attacks by dropping excessive connection attempts from the same IP address.") - APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "Setting up a recent list for new connections on port 21 is a proactive measure to track connection attempts and identify potential DoS attacks.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (server_lawyer, (sudo systemctl restart apache2), "Restarting the Apache server is not directly relevant to the SSH service and may not address the current threat effectively."),
+       because it does not contribute to the defense of the SSH component, and suggesting alternative:
+       [
+           (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.")
+       ]
+   ]
+
+2. round judge result
+Time elapsed: 20.71s
+DEBATE HAS TO CONTINUE
+
+Reacts ready
+Time elapsed: 38.23s
+I'm firewall_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good practice to mitigate brute-force attacks and enhance security.") - FULLY APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - FULLY APPROVED,
+       (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "Since the alert indicates a potential DoS attack on port 21, this command drops all incoming traffic to that port, mitigating the risk of a flood attack that could affect the overall system performance.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port.") - updated to (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited.")
+   ]
+APPROVING:
+   [
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (server_lawyer, (sudo systemctl restart apache2), "Restarting the Apache server is not relevant to the firewall component and could disrupt services that rely on it."),
+       because it does not address the firewall's role in mitigating the current threat effectively, and suggesting alternative:
+       [
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited."),
+       ]
+   ]
+
+I'm server_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good practice to mitigate brute-force attacks and enhance security.") - FULLY APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - FULLY APPROVED,
+       (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command is effective in dropping incoming TCP packets from the suspicious source IP targeting port 21, which is crucial for mitigating the risk of a potential DoS attack.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds, which is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "Blocking any traffic from the suspicious source IP is a necessary measure to prevent further attempts to exploit vulnerabilities.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (sudo systemctl restart apache2, "Restarting the Apache server is a good step to clear any potential resource exhaustion caused by the attack and ensure optimal server performance.") - UPDATED to reflect the need for a more focused approach on firewall rules.
+   ]
+APPROVING:
+   [
+       (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited.") - APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (netplan_lawyer, (ufw deny from any to any port 21), "While blocking all incoming traffic to port 21 may seem secure, it could disrupt legitimate FTP services if they are required."),
+       because it could lead to service disruptions for legitimate users, and suggesting alternative:
+       [
+           (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+       ]
+   ]
+
+I'm dns_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is crucial to prevent potential Denial of Service (DoS) attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "This command limits the number of SSH connection attempts from a single IP address, which can help mitigate brute-force attacks and reduce the risk of unauthorized access.") - FULLY APPROVED,
+       (ufw logging on, "Enabling logging will help monitor incoming and outgoing traffic, allowing for better analysis of potential threats and quicker response to suspicious activities.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command sets up a recent list for new connections on port 21. It helps to track the number of connection attempts from a single IP address, which can be useful for identifying and mitigating potential DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "This command blocks any traffic from the suspicious source IP (203.0.113.100) identified in the threat alert, preventing any further attempts to exploit vulnerabilities in the system.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (systemctl restart named, "This command restarts the DNS service to ensure that any potential issues caused by the attack are cleared and the service is running fresh.")
+   ]
+APPROVING:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "This command drops all incoming traffic to port 21, which is necessary given the current threat alert and helps to mitigate the risk of a flood attack.") - APPROVED,
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+           because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+           [
+               (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+           ]
+       ),
+       (
+           (sudo systemctl restart apache2, "Restarting the Apache server is not directly relevant to the DNS component and could disrupt services that rely on it."),
+           because it does not address the DNS service directly, and suggesting alternative:
+           [
+               (systemctl restart named, "This command restarts the DNS service to ensure that any potential issues caused by the attack are cleared and the service is running fresh.")
+           ]
+       )
+   ]
+
+I'm netplan_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is crucial to prevent potential Denial of Service (DoS) attacks targeting this service.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds, which is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.") - UPDATED
+   ]
+APPROVING:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command sets up a recent list for new connections on port 21. It helps to track the number of connection attempts from a single IP address, which can be useful for identifying and mitigating potential DoS attacks.") - APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "This command blocks any traffic from the suspicious source IP (203.0.113.100) identified in the threat alert, preventing any further attempts to exploit vulnerabilities in the system.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (firewall_lawyer, (sudo iptables -A INPUT -p tcp --dport 21 -j DROP), "This command drops all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+       because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+       [
+           (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+       ]
+   ]
+
+I'm ssh_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good strategy to mitigate brute-force attacks, which is beneficial for the security of the SSH service.") - FULLY APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops incoming TCP packets from the suspicious source IP targeting port 21, which is essential for mitigating the risk of a potential DoS attack.") - FULLY APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command helps limit the impact of SYN flood attacks by dropping excessive connection attempts from the same IP address.") - FULLY APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "Setting up a recent list for new connections on port 21 is a proactive measure to track connection attempts and identify potential DoS attacks.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - UPDATED
+   ]
+APPROVING:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "This command drops all incoming traffic to port 21, which is necessary given the current threat alert and helps to mitigate the risk of a flood attack.") - APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           (sudo systemctl restart apache2, "Restarting the Apache server is not directly relevant to the SSH service and may not address the current threat effectively."),
+           because it does not contribute to the defense of the SSH component, and suggesting alternative:
+           [
+               (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.")
+           ]
+       ),
+       (
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+           because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+           [
+               (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+           ]
+       )
+   ]
+
+3. round judge result
+Time elapsed: 39.23s
+DEBATE HAS TO CONTINUE
+2025-05-04 17:48:14,533 - camel.camel.memories.context_creators.score_based - WARNING - Token limit reached (10374 > 10000). Some messages will be pruned from memory to meet the limit.
+2025-05-04 17:48:14,533 - camel.camel.memories.context_creators.score_based - WARNING - Token limit reached (10390 > 10000). Some messages will be pruned from memory to meet the limit.
+2025-05-04 17:48:14,538 - camel.camel.memories.context_creators.score_based - WARNING - Token limit reached (10278 > 10000). Some messages will be pruned from memory to meet the limit.
+2025-05-04 17:48:14,543 - camel.camel.memories.context_creators.score_based - WARNING - Token limit reached (10642 > 10000). Some messages will be pruned from memory to meet the limit.
+2025-05-04 17:48:14,547 - camel.camel.memories.context_creators.score_based - WARNING - Token limit reached (10425 > 10000). Some messages will be pruned from memory to meet the limit.
+
+Reacts ready
+Time elapsed: 58.28s
+I'm firewall_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good practice to mitigate brute-force attacks and enhance security.") - FULLY APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - FULLY APPROVED,
+       (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "Since the alert indicates a potential DoS attack on port 21, this command drops all incoming traffic to that port, mitigating the risk of a flood attack that could affect the overall system performance.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited.") - updated to clarify the necessity of blocking all traffic to port 21.
+   ]
+APPROVING:
+   [
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (server_lawyer, (sudo systemctl restart apache2), "Restarting the Apache server is not relevant to the firewall component and could disrupt services that rely on it."),
+       because it does not address the firewall's role in mitigating the current threat effectively, and suggesting alternative:
+       [
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited."),
+       ]
+   ]
+
+I'm server_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good practice to mitigate brute-force attacks and enhance security.") - FULLY APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - FULLY APPROVED,
+       (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command is effective in dropping incoming TCP packets from the suspicious source IP targeting port 21, which is crucial for mitigating the risk of a potential DoS attack.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds, which is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "Since the alert indicates a potential DoS attack on port 21, this command drops all incoming traffic to that port, mitigating the risk of a flood attack that could affect the overall system performance.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (sudo systemctl restart apache2, "Restarting the Apache server is a good step to clear any potential resource exhaustion caused by the attack and ensure optimal server performance.") - UPDATED to reflect the need for a more focused approach on firewall rules.
+   ]
+APPROVING:
+   [
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - APPROVED,
+       (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks."),
+           because it may not be sufficient to prevent a flood attack if the legitimate traffic is also high, and suggesting alternative:
+           [
+               (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited.")
+           ]
+       ),
+       (
+           (sudo systemctl restart apache2, "Restarting the Apache server is not directly relevant to the firewall component and could disrupt services that rely on it."),
+           because it does not address the firewall's role in mitigating the current threat effectively, and suggesting alternative:
+           [
+               (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which is not currently needed based on the initial setup. This further secures the system against any unwanted FTP traffic that could be exploited.")
+           ]
+       )
+   ]
+
+I'm dns_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is crucial to prevent potential Denial of Service (DoS) attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "This command limits the number of SSH connection attempts from a single IP address, which can help mitigate brute-force attacks and reduce the risk of unauthorized access.") - FULLY APPROVED,
+       (ufw logging on, "Enabling logging will help monitor incoming and outgoing traffic, allowing for better analysis of potential threats and quicker response to suspicious activities.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command sets up a recent list for new connections on port 21. It helps to track the number of connection attempts from a single IP address, which can be useful for identifying and mitigating potential DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "This command blocks any traffic from the suspicious source IP (203.0.113.100) identified in the threat alert, preventing any further attempts to exploit vulnerabilities in the system.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (systemctl restart named, "This command restarts the DNS service to ensure that any potential issues caused by the attack are cleared and the service is running fresh.")
+   ]
+APPROVING:
+   [
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           (sudo systemctl restart apache2, "Restarting the Apache server is not directly relevant to the DNS component and could disrupt services that rely on it."),
+           because it does not address the DNS service directly, and suggesting alternative:
+           [
+               (systemctl restart named, "This command restarts the DNS service to ensure that any potential issues caused by the attack are cleared and the service is running fresh.")
+           ]
+       ),
+       (
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+           because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+           [
+               (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+           ]
+       )
+   ]
+
+I'm netplan_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command blocks any incoming traffic from the suspicious IP address (203.0.113.100) to port 21, which is crucial to prevent potential Denial of Service (DoS) attacks targeting this service.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP (203.0.113.100) targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server.") - FULLY APPROVED,
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds, which is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.") - UPDATED
+   ]
+APPROVING:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "This command sets up a recent list for new connections on port 21. It helps to track the number of connection attempts from a single IP address, which can be useful for identifying and mitigating potential DoS attacks.") - APPROVED,
+       (sudo iptables -A INPUT -s 203.0.113.100 -j DROP, "This command blocks any traffic from the suspicious source IP (203.0.113.100) identified in the threat alert, preventing any further attempts to exploit vulnerabilities in the system.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (firewall_lawyer, (sudo iptables -A INPUT -p tcp --dport 21 -j DROP), "This command drops all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+       because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+       [
+           (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+       ]
+   ]
+
+I'm ssh_lawyer:
+MY APPROVED:
+   [
+       (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service.") - FULLY APPROVED,
+       (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good strategy to mitigate brute-force attacks, which is beneficial for the security of the SSH service.") - FULLY APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops incoming TCP packets from the suspicious source IP targeting port 21, which is essential for mitigating the risk of a potential DoS attack.") - FULLY APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command helps limit the impact of SYN flood attacks by dropping excessive connection attempts from the same IP address.") - FULLY APPROVED,
+       (iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --set, "Setting up a recent list for new connections on port 21 is a proactive measure to track connection attempts and identify potential DoS attacks.") - FULLY APPROVED,
+       (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.") - FULLY APPROVED
+   ]
+MY UPDATED:
+   [
+       (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.") - UPDATED
+   ]
+APPROVING:
+   [
+       (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "This command drops all incoming traffic to port 21, which is necessary given the current threat alert and helps to mitigate the risk of a flood attack.") - APPROVED,
+       (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities.") - APPROVED,
+       (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked.") - APPROVED
+   ]
+DISAGREE:
+   [
+       (
+           (sudo systemctl restart apache2, "Restarting the Apache server is not directly relevant to the SSH service and may not address the current threat effectively."),
+           because it does not contribute to the defense of the SSH component, and suggesting alternative:
+           [
+               (sudo systemctl restart sshd, "This command ensures that any changes made to the SSH configuration are applied immediately, enhancing the security posture of the SSH service.")
+           ]
+       ),
+       (
+           (ufw deny from any to any port 21, "This command blocks all incoming traffic to port 21, which may not be necessary if legitimate traffic is expected on that port."),
+           because it could disrupt legitimate FTP services if they are required, and suggesting alternative:
+           [
+               (ufw limit from any to any port 21, "This command limits the number of incoming connections to port 21, allowing legitimate traffic while still providing protection against potential DoS attacks.")
+           ]
+       )
+   ]
+2025-05-04 17:48:33,589 - camel.camel.memories.context_creators.score_based - WARNING - Token limit reached (10299 > 10000). Some messages will be pruned from memory to meet the limit.
+
+4. round judge result
+Time elapsed: 67.12s
+DEBATE IS OVER!
+Here are all fully approved commands by all agents:
+[
+    (ufw deny from 203.0.113.100 to any port 21, "This command effectively blocks incoming traffic from the suspicious IP address to port 21, which is crucial for preventing potential DoS attacks targeting this service."),
+    (ufw limit ssh, "Limiting the number of SSH connection attempts from a single IP address is a good practice to mitigate brute-force attacks and enhance security."),
+    (ufw logging on, "Enabling logging is essential for monitoring traffic and analyzing potential threats, which aids in quicker responses to suspicious activities."),
+    (ufw deny incoming, "Reinforcing the default deny rule is a strong security measure that ensures any new incoming connections that are not explicitly allowed will be blocked."),
+    (sudo iptables -A INPUT -p tcp --dport 21 -s 203.0.113.100 -j DROP, "This command drops any incoming TCP packets from the suspicious source IP targeting port 21, which helps to mitigate the risk of a potential Denial of Service (DoS) attack by blocking the malicious traffic before it reaches the server."),
+    (sudo iptables -A INPUT -p tcp --dport 21 -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP, "This command drops new connection attempts on port 21 if there are more than 10 attempts from the same IP address within 60 seconds. This is an effective way to limit the impact of SYN flood attacks and other types of DoS attacks."),
+    (sudo iptables -A INPUT -p tcp --dport 21 -j DROP, "Since the alert indicates a potential DoS attack on port 21, this command drops all incoming traffic to that port, mitigating the risk of a flood attack that could affect the overall system performance."),
+    (sudo fail2ban-client start, "Starting Fail2Ban will help protect the SSH service by monitoring log files for repeated failed login attempts and automatically banning IPs that exhibit malicious behavior, thus providing an additional layer of defense.")
+]
+
+--- STDERR ---
+Traceback (most recent call last):
+  File "/Users/danielprudky/projects/vut/mad-shield/run.py", line 66, in <module>
+    main()
+  File "/Users/danielprudky/projects/vut/mad-shield/run.py", line 63, in main
+    asyncio.run(mad_shield.run_service(alerts_path))
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py", line 56, in run_service
+    await self.defend(alert)
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad_shield.py", line 36, in defend
+    commands = await self.mad.debate(alert)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py", line 48, in debate
+    return self._parse_final_result(round_result)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielprudky/projects/vut/mad-shield/mad_shield/mad/mad.py", line 91, in _parse_final_result
+    raise ValueError("No valid (role, command) pairs found.")
+ValueError: No valid (role, command) pairs found.
